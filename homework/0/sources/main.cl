@@ -8,59 +8,78 @@ class Main inherits IO {
     atoi : A2I <- new A2I;
     helper : Helper <- new Helper;
 
-    which() : Object {
-        let
-            token : String <- strtok.get()
-        in
+    which_element(type : String) : Object {
+        if
+            type = new Object.type_name()
+        then
+            new Object
+        else
             if
-                token = new Object.type_name()
+                type = new IO.type_name()
             then
-                new Object
+                new IO
             else
-                if
-                    token = new IO.type_name()
+                if 
+                    type = new Int.type_name()
                 then
-                    new IO
+                    atoi.a2i(strtok.get())
                 else
-                    if 
-                        token = new Int.type_name()
+                    if
+                        type = new Bool.type_name()
                     then
-                        atoi.a2i(strtok.get())
+                        if 
+                            strtok.get() = in_strs.true_str()
+                        then
+                            true
+                        else
+                            false
+                        fi
                     else
                         if
-                            token = new Bool.type_name()
+                            type = new String.type_name()
                         then
-                            if 
-                                strtok.get() = in_strs.true_str()
-                            then
-                                true
-                            else
-                                false
-                            fi
+                            strtok.get()
                         else
                             if
-                                token = new String.type_name()
+                                helper.describes_product(type)
                             then
-                                strtok.get()
+                                helper.build_product(type, strtok.get(), strtok.get(), atoi.a2i(strtok.get()))
                             else
                                 if
-                                    helper.describes_product(token)
+                                    helper.describes_rank(type)
                                 then
-                                    helper.build_product(token, strtok.get(), strtok.get(), atoi.a2i(strtok.get()))
+                                    helper.build_rank(type, strtok.get())
                                 else
-                                    if
-                                        helper.describes_rank(token)
-                                    then
-                                        helper.build_rank(token, strtok.get())
-                                    else
-                                        new Object
-                                    fi
+                                    new Object
                                 fi
                             fi
                         fi
                     fi
                 fi
             fi
+        fi
+    };
+
+    which_filter(type : String) : Filter {
+        if
+            type = new ProductFilter.type_name()
+        then
+            new ProductFilter
+        else
+            if
+                type = new RankFilter.type_name()
+            then
+                new RankFilter
+            else
+                if
+                    type = new SamePriceFilter.type_name()
+                then
+                    new SamePriceFilter
+                else
+                    new Filter
+                fi
+            fi
+        fi
     };
 
     load(line : String) : Object {{
@@ -76,7 +95,7 @@ class Main inherits IO {
                 lists.add(working_list);
             } else {
                 strtok.init(line, in_strs.delimiter());
-                working_list.add(which());
+                working_list.add(which_element(strtok.get()));
 
                 line <- in_string();
             } fi
@@ -135,6 +154,14 @@ class Main inherits IO {
         }
     };
 
+    filter(pos : String, type : String) : Object {
+        let
+            index : Int <- atoi.a2i(pos),
+            filter : Filter <- which_filter(type)
+        in
+            true
+    };
+
     main() : Object {{
         let
             line : String,
@@ -173,7 +200,13 @@ class Main inherits IO {
                                 then
                                     merge(strtok.get(), strtok.get())
                                 else
-                                    looping <- false
+                                    if
+                                        token = in_strs.cmd_filterby()
+                                    then
+                                        filter(strtok.get(), strtok.get())
+                                    else
+                                        looping <- false
+                                    fi
                                 fi
                             fi
                         fi

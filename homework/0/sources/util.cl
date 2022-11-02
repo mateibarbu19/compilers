@@ -4,7 +4,33 @@ class Comparator {
 };
 
 class Filter {
-    filter(o : Object) : Bool {true};
+    apply(object : Object) : Bool { { abort(); false; } };
 };
 
-(* TODO: implement specified comparators and filters*)
+class ProductFilter inherits Filter {
+    apply(object: Object) : Bool {
+        case object of
+            p : Product => true;
+            o : Object => false;
+        esac
+    };
+};
+
+class RankFilter inherits Filter {
+    apply(object : Object) : Bool {
+        case object of
+            p : Rank => true;
+            o : Object => false;
+        esac
+    };
+};
+
+
+class SamePriceFilter inherits Filter {
+    apply(object : Object) : Bool {
+        case object of
+            p : Product => p.getprice() = p@Product.getprice();
+            o : Object => false;
+        esac
+    };
+};
