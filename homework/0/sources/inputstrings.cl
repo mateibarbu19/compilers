@@ -4,6 +4,10 @@ class InputStrings {
     cmd_print() : String { "print" };
     cmd_merge() : String { "merge" };
     cmd_filterby() : String { "filterBy" };
+    cmd_sortby() : String { "sortBy" };
+
+    ascendent() : String { "ascendent" };
+    descendent() : String { "descendent" };
     delimiter() : String { " " };
     end_str() : String { "END" };
     true_str() : String { "true" }; 

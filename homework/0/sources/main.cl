@@ -82,6 +82,28 @@ class Main inherits IO {
         fi
     };
 
+    which_comparator(type : String) : Comparator {
+        if
+            type = new PriceComparator.type_name()
+        then
+            new PriceComparator
+        else
+            if
+                type = new RankComparator.type_name()
+            then
+                new RankComparator
+            else
+                if
+                    type = new AlphabeticComparator.type_name()
+                then
+                    new AlphabeticComparator
+                else
+                    new Comparator
+                fi
+            fi
+        fi
+    };
+
     load(line : String) : Object {{
         working_list <- new List;
 
@@ -157,11 +179,29 @@ class Main inherits IO {
     filter(pos : String, type : String) : Object {
         let
             index : Int <- atoi.a2i(pos),
-            f : Filter <- which_filter(type)
+            f : Filter <- which_filter(type),
+            l : List <- lists.to_list(
+                            lists.get_from_nth(index).first()
+                        ).filter(f)
         in
-            lists.to_list(
-                lists.get_from_nth(index).first()
-            ).filter(f)
+            l
+    };
+
+    sort(pos : String, type : String, way : String) : Object {
+        let
+            index : Int <- atoi.a2i(pos),
+            c : Comparator <- which_comparator(type),
+            l : List <- lists.to_list(
+                            lists.get_from_nth(index).first()
+                        ).sort(c)
+        in
+            if
+                way = in_strs.ascendent()
+            then
+                l
+            else
+                l.reverse()
+            fi
     };
 
     main() : Object {{
@@ -207,7 +247,13 @@ class Main inherits IO {
                                     then
                                         filter(strtok.get(), strtok.get())
                                     else
-                                        looping <- false
+                                        if
+                                            token = in_strs.cmd_sortby()
+                                        then
+                                            sort(strtok.get(), strtok.get(), strtok.get())
+                                        else
+                                            looping <- false
+                                        fi
                                     fi
                                 fi
                             fi

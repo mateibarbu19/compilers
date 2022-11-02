@@ -181,7 +181,53 @@ class List inherits IO {
         }
     };
 
-    sortBy() : SELF_TYPE {
-        self (* TODO *)
+    sort(c : Comparator) : SELF_TYPE {{
+        let
+            i : List <- self
+        in
+            while
+                not isvoid i
+            loop {
+                let
+                    j : List <- i.next(),
+                    max : List <- i,
+                    aux : Object
+                in {
+                    while
+                        not isvoid j
+                    loop {
+                        if
+                            0 < c.compare_to(max.first(), j.first())
+                        then
+                            max <- j
+                        else
+                            false
+                        fi;
+
+                        j <- j.next();
+                    } pool;
+                
+                    aux <- i.first();
+                    i.set_first(max.first());
+                    max.set_first(aux);
+                };
+
+                i <- i.next();
+            } pool;
+
+        self;
+    }};
+
+    reverse() : SELF_TYPE {
+        if
+            is_last()
+        then
+            self
+        else
+            let
+                l : List <- next.reverse().add(first)
+            in
+                set_first(l.first()).set_next(l.next())
+        fi
     };
 };
