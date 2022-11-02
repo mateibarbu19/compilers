@@ -105,12 +105,34 @@ class Main inherits IO {
                     l <- l.next();
                 } pool
             else
-                out_string(
-                    lists.
-                        get_from_nth(index).
-                            first_to_string()
-                )
+                out_string(lists.get_from_nth(index).first_to_string())
             fi
+    };
+
+    merge(pos1 : String, pos2 : String) : List {
+        let
+            index1 : Int <- atoi.a2i(pos1),
+            index2 : Int <- atoi.a2i(pos2),
+            
+            l1 : List,
+            l2 : List
+        in {
+            if
+                index1 < index2
+            then {
+                l2 <- lists.to_list(
+                        lists.delete_nth_elem(index2));
+                l1 <- lists.to_list(
+                    lists.delete_nth_elem(index1));
+            } else {
+                l1 <- lists.to_list(
+                        lists.delete_nth_elem(index1));
+                l2 <- lists.to_list(
+                    lists.delete_nth_elem(index2));
+            } fi;
+
+            lists.add(l1.merge(l2));
+        }
     };
 
     main() : Object {{
@@ -146,7 +168,13 @@ class Main inherits IO {
                             then
                                 print(line)
                             else
-                                looping <- false
+                                if
+                                    token = in_strs.cmd_merge()
+                                then
+                                    merge(strtok.get(), strtok.get())
+                                else
+                                    looping <- false
+                                fi
                             fi
                         fi
                     fi

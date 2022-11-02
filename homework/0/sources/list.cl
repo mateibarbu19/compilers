@@ -5,6 +5,12 @@ class List inherits IO {
     first() : Object { first };
     next() : List { next };
 
+    set_first(o : Object) : SELF_TYPE {{
+        first <- o;
+
+        self;
+    }};
+
     set_next(n : List) : SELF_TYPE {{
         next <- n;
 
@@ -13,6 +19,15 @@ class List inherits IO {
 
     is_empty() : Bool { isvoid first };
     is_last() : Bool { isvoid next };
+
+    to_list(object : Object) : List {
+        case
+            object
+        of
+            l : List => l;
+            o : Object => new List;
+        esac
+    };
 
     get_last() : List {
         if
@@ -26,14 +41,14 @@ class List inherits IO {
 
     get_from_nth(index : Int) : List {
         if
-            index = 1
+            index <= 1
         then
             self
         else
             if
                 isvoid next
             then
-                self
+                new List
             else
                 next.get_from_nth(index - 1)
             fi
@@ -54,6 +69,31 @@ class List inherits IO {
 
         self;
     }};
+
+    delete_nth_elem(index : Int) : Object {
+        let
+            removed : Object,
+            prev : List <- get_from_nth(index - 1)
+        in {
+            if
+                not prev.is_empty()
+            then
+                if
+                    not isvoid prev.next()
+                then {
+                    removed <- prev.next().first();
+                    prev.set_next(prev.next().next());
+                } else {
+                    removed <- prev.first();
+                    prev.set_first(while false loop false pool);
+                } fi
+            else
+                false
+            fi;
+
+            removed;
+        }
+    };
 
     -- because there is no to_string function for basic types
     first_to_string() : String {
@@ -106,9 +146,11 @@ class List inherits IO {
         }
     };
 
-    merge(other : List) : SELF_TYPE {
-        self (* TODO *)
-    };
+    merge(other : List) : SELF_TYPE {{
+        get_last().set_next(other);
+
+        self;
+    }};
 
     filterBy() : SELF_TYPE {
         self (* TODO *)
