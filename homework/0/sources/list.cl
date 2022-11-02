@@ -97,27 +97,33 @@ class List inherits IO {
 
     -- because there is no to_string function for basic types
     first_to_string() : String {
-        case
-            first
-        of
-            l : List => l.to_string();
-            o : Object => o.type_name().concat("()");
-            io : IO => io.type_name().concat("()");
-            i : Int =>
-                i.type_name().concat("(").concat(new A2I.i2a(i)).concat(")");
-            s : String =>
-                s.type_name().concat("(").concat(s).concat(")");
-            b : Bool =>
-                if
-                    b
-                then
-                    b.type_name().concat("(true)")
-                else
-                    b.type_name().concat("(false)")
-                fi;
-            p : Product => p.to_string();
-            r : Rank => r.to_string();
-        esac
+        if
+            not isvoid first
+        then
+            case
+                first
+            of
+                l : List => l.to_string();
+                o : Object => o.type_name().concat("()");
+                io : IO => io.type_name().concat("()");
+                i : Int =>
+                    i.type_name().concat("(").concat(new A2I.i2a(i)).concat(")");
+                s : String =>
+                    s.type_name().concat("(").concat(s).concat(")");
+                b : Bool =>
+                    if
+                        b
+                    then
+                        b.type_name().concat("(true)")
+                    else
+                        b.type_name().concat("(false)")
+                    fi;
+                p : Product => p.to_string();
+                r : Rank => r.to_string();
+            esac
+        else
+            ""
+        fi
     };
 
     to_string() : String {
@@ -152,8 +158,27 @@ class List inherits IO {
         self;
     }};
 
-    filterBy() : SELF_TYPE {
-        self (* TODO *)
+    filter(f : Filter) : SELF_TYPE {
+        let
+            res : List <- new List,
+            l : List <- self
+        in {
+            while
+                not isvoid l
+            loop {
+                if
+                    f.apply(l.first())
+                then
+                    res.add(l.first())
+                else
+                    false
+                fi;
+
+                l <- l.next();
+            } pool;
+
+            set_first(res.first()).set_next(res.next());
+        }
     };
 
     sortBy() : SELF_TYPE {

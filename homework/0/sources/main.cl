@@ -157,9 +157,11 @@ class Main inherits IO {
     filter(pos : String, type : String) : Object {
         let
             index : Int <- atoi.a2i(pos),
-            filter : Filter <- which_filter(type)
+            f : Filter <- which_filter(type)
         in
-            true
+            lists.to_list(
+                lists.get_from_nth(index).first()
+            ).filter(f)
     };
 
     main() : Object {{
