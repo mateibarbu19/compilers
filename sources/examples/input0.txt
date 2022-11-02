@@ -1,8 +1,0 @@
-Object
-IO
-Int 1
-Bool true
-Bool false
-String ana
-String
-END
