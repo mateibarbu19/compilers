@@ -27,4 +27,6 @@ class OutputStrings {
         -- .concat("\tSamePriceFilter: Keeps the products whose price is the "
         -- .concat("same as if it were a genric product.\n")
     };
+
+    list_delimiter() : String { ": " };
 };
