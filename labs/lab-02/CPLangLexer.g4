@@ -32,6 +32,24 @@ CLOSED_SQUARE_BRACKET : ']';
 OPENED_CURLY_BRACKET : '{';
 CLOSED_CURLY_BRACKET : '}';
 
+PLUS : '+';
+
+MINUS : '-';
+
+MULT : '*';
+
+DIV : '/';
+
+EQUAL : '==';
+
+LT : '<';
+
+LE : '<=';
+
+COMMA : ',';
+
+ASSIGN : '=';
+
 /* Număr întreg.
  * 
  * fragment spune că acea categorie este utilizată doar în interiorul
@@ -48,9 +66,9 @@ ID : (LETTER | '_')(LETTER | '_' | DIGIT)*;
 /* Număr real.
  */
 fragment DIGITS : DIGIT+;
-fragment FRACTION : ('.' DIGITS?)?;
+fragment FRACTION : ('.' DIGITS?);
 fragment EXPONENT : ('e' ('+' | '-')? DIGITS)?;
-REAL : DIGITS FRACTION EXPONENT;
+REAL : DIGITS FRACTION? EXPONENT | DIGITS? FRACTION EXPONENT;
 
 /* Șir de caractere.
  * 
