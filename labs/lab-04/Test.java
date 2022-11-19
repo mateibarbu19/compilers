@@ -14,17 +14,6 @@ public class Test {
         var lexer = new CPLangLexer(input);
         var tokenStream = new CommonTokenStream(lexer);
 
-        /*
-         * tokenStream.fill();
-         * List<Token> tokens = tokenStream.getTokens();
-         * for (var token : tokens) {
-         * var text = token.getText();
-         * var type = CPLangLexer.VOCABULARY.getSymbolicName(token.getType());
-         * 
-         * System.out.println(text + " : " + type);
-         * }
-         */
-
         var parser = new CPLangParser(tokenStream);
         var tree = parser.expr();
         System.out.println(tree.toStringTree(parser));
@@ -60,6 +49,9 @@ public class Test {
                         ctx.start);
             }
 
+            // DONE 3: Completati cu alte metode pentru a trece din arborele
+            // generat automat in reprezentarea AST-ului dorit
+
             @Override
             public ASTNode visitAssign(CPLangParser.AssignContext ctx) {
                 return new Assign((Id) visit(ctx.ID()),
@@ -87,21 +79,33 @@ public class Test {
             @Override
             public ASTNode visitUnaryMinus(CPLangParser.UnaryMinusContext ctx) {
                 return new Minus(
-                    (Expression) visit(ctx.expr()),
-                    ctx.start
-                );
+                        (Expression) visit(ctx.expr()),
+                        ctx.start);
             }
 
             @Override
             public ASTNode visitMultDiv(CPLangParser.MultDivContext ctx) {
                 return new MultDiv((Expression) visit(ctx.left),
-                (Expression) ctx.op,
-                , null)
+                        ctx.op,
+                        (Expression) visit(ctx.right),
+                        ctx.start);
             }
 
-            // TODO 3: Completati cu alte metode pentru a trece din arborele
-            // generat automat in reprezentarea AST-ului dorit
+            @Override
+            public ASTNode visitPlusMinus(CPLangParser.PlusMinusContext ctx) {
+                return new PlusMinus((Expression) visit(ctx.left),
+                        ctx.op,
+                        (Expression) visit(ctx.right),
+                        ctx.start);
+            }
 
+            @Override
+            public ASTNode visitRelational(CPLangParser.RelationalContext ctx) {
+                return new Relational((Expression) visit(ctx.left),
+                        ctx.op,
+                        (Expression) visit(ctx.right),
+                        ctx.start);
+            }
         };
 
         // ast este AST-ul proaspăt construit pe baza arborelui de derivare.
@@ -115,19 +119,19 @@ public class Test {
         // Aveți grijă să nu îi confundați!
         var printVisitor = new ASTVisitor<Void>() {
             int indent = 0;
-
+            
             @Override
             public Void visit(Id id) {
                 printIndent("ID " + id.token.getText());
                 return null;
             }
-
+            
             @Override
             public Void visit(Int intt) {
                 printIndent("INT " + intt.token.getText());
                 return null;
             }
-
+            
             @Override
             public Void visit(If iff) {
                 printIndent("IF");
@@ -138,11 +142,93 @@ public class Test {
                 indent--;
                 return null;
             }
-
             // TODO 4: Afisati fiecare nod astfel incat nivelul pe care acesta
             // se afla in AST sa fie reprezentat de numarul de tab-uri.
             // Folositi functia de mai jos 'printIndent' si incrementati /
             // decrementati corespunzator numarul de tab-uri
+
+            @Override
+            public Void visit(Bool booll) {
+                printIndent("Bool " + booll.token.getText());
+                return null;
+            };
+
+            @Override
+            public Void visit(Assign assign) {
+                printIndent("ASSIGN");
+                indent++;
+                assign.name.accept(this);
+                assign.e.accept(this);
+                indent--;
+                return null;
+            }
+
+            @Override
+            public Void visit(Paren paren) {
+                printIndent("PAREN");
+                indent++;
+                paren.e.accept(this);
+                indent--;
+                return null;
+            }
+
+            @Override
+            public Void visit(FloatNode floatNode) {
+                printIndent("FLOAT " + floatNode.token.getText());
+                return null;
+            }
+
+            @Override
+            public Void visit(Call call) {
+                printIndent("CALL");
+                indent++;
+                call.name.accept(this);
+                call.args.forEach(a -> a.accept(this));
+                indent--;
+                return null;
+            }
+
+            @Override
+            public Void visit(Minus minus) {
+                printIndent("MIUS");
+                indent++;
+                minus.e.accept(this);
+                indent--;
+                return null;
+            }
+
+            @Override
+            public Void visit(MultDiv multDiv) {
+                printIndent("MULTDIV");
+                indent++;
+                multDiv.left.accept(this);
+                printIndent(multDiv.op.getText());
+                multDiv.right.accept(this);
+                indent--;
+                return null;
+            }
+
+            @Override
+            public Void visit(PlusMinus plustDiv) {
+                printIndent("PLUSMINUS");
+                indent++;
+                plustDiv.left.accept(this);
+                printIndent(plustDiv.op.getText());
+                plustDiv.right.accept(this);
+                indent--;
+                return null;
+            }
+
+            @Override
+            public Void visit(Relational relational) {
+                printIndent("RELATIONAL");
+                indent++;
+                relational.left.accept(this);
+                printIndent(relational.op.getText());
+                relational.right.accept(this);
+                indent--;
+                return null;
+            }
 
             void printIndent(String str) {
                 for (int i = 0; i < indent; i++)
@@ -150,11 +236,6 @@ public class Test {
                 System.out.println(str);
             }
         };
-
-        // TODO 5: Creati un program CPLang care sa cuprinda cat mai multe
-        // constructii definite in laboratorul de astazi. Scrieti codul CPLang
-        // intr-un fisier txt si modificati fisierul de input de la inceputul
-        // metodei 'main'
 
         System.out.println("The AST is");
         ast.accept(printVisitor);
