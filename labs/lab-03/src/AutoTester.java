@@ -173,6 +173,7 @@ public class AutoTester {
                 3 * 6 + 2;
                 3 + 3 * 2 + 20;
                 3 - 3 / 3;
+                - 3 + 2;
                 """);
 
         var lexer = new CPLangLexer(input);
@@ -184,7 +185,7 @@ public class AutoTester {
         var tree = parser.prog();
         visitor.visit(tree);
 
-        List<Integer> expectedVals = List.of(15, 20, 29, 2);
+        List<Integer> expectedVals = List.of(15, 20, 29, 2, -1);
 
         Assert.assertEquals("Testing number of identified expressions", expectedVals.size(), Test.task3list.size());
         for (int i = 0; i < expectedVals.size(); i++) {
