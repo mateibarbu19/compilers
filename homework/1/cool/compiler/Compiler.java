@@ -5,6 +5,8 @@ import org.antlr.v4.runtime.tree.*;
 
 import cool.lexer.*;
 import cool.parser.*;
+import cool.visitor.ASTConstruction;
+import cool.visitor.ASTStringify;
 
 import java.io.*;
 import java.util.List;
@@ -48,11 +50,11 @@ public class Compiler {
             // tokenStream.fill();
             // List<Token> tokens = tokenStream.getTokens();
             // tokens.stream().forEach(token -> {
-            //     var text = token.getText();
-            //     var name = CoolLexer.VOCABULARY.getSymbolicName(token.getType());
+            // var text = token.getText();
+            // var name = CoolLexer.VOCABULARY.getSymbolicName(token.getType());
 
-            //     System.out.println(text + " : " + name);
-            //     // System.out.println(token);
+            // System.out.println(token.getLine() + "," + token.getCharPositionInLine() + ":
+            // " + text + " : " + name);
             // });
 
             // Parser
@@ -118,6 +120,10 @@ public class Compiler {
             return;
         }
 
-        // TODO Print tree
+        var astBuilder = new ASTConstruction();
+        var astStringifier = new ASTStringify();
+
+        var astHead = astBuilder.visit(globalTree);
+        System.out.print(astHead.accept(astStringifier));
     }
 }

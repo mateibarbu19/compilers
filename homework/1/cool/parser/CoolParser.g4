@@ -8,52 +8,47 @@ options {
     package cool.parser;
 }
 
-program: (classDefine SEMICOLON)* EOF;
+program: (classDefine SEMICOLON)+ EOF;
 
+// some weird conflict when named class
 classDefine:
-	CLASS TYPEID (INHERITS TYPEID)? OPENING_BRACE (
+	CLASS name = TYPEID (INHERITS parent = TYPEID)? OPENING_BRACE (
 		feature SEMICOLON
 	)* CLOSING_BRACE;
 
 feature:
 	OBJECTID OPENING_PARENTHESIS (formal (COMMA formal)*)? CLOSING_PARENTHESIS COLON TYPEID
 		OPENING_BRACE expression CLOSING_BRACE			# method
-	| OBJECTID COLON TYPEID (ASSIGNMENT expression)?	# property;
+	| OBJECTID COLON TYPEID (ASSIGNMENT expression)?	# attribute;
 
 formal: OBJECTID COLON TYPEID;
-/* method argument */
+
+variable: OBJECTID COLON TYPEID (ASSIGNMENT expression)?;
+
+alternative: OBJECTID COLON TYPEID CASE_ARROW expression;
 
 expression:
-	expression (AT TYPEID)? DOT OBJECTID OPENING_PARENTHESIS (
-		expression (COMMA expression)*
+	caller = expression (AT TYPEID)? DOT OBJECTID OPENING_PARENTHESIS (
+		arguments += expression (COMMA arguments += expression)*
 	)? CLOSING_PARENTHESIS # methodCall
 	| OBJECTID OPENING_PARENTHESIS (
-		expression (COMMA expression)*
-	)? CLOSING_PARENTHESIS									# ownMethodCall
-	| IF expression THEN expression ELSE expression FI		# if
-	| WHILE expression LOOP expression POOL					# while
-	| OPENING_BRACE (expression SEMICOLON)+ CLOSING_BRACE	# block
-	| LET OBJECTID COLON TYPEID (ASSIGNMENT expression)? (
-		COMMA OBJECTID COLON TYPEID (ASSIGNMENT expression)?
-	)* IN expression # letIn
-	| CASE expression OF (
-		OBJECTID COLON TYPEID CASE_ARROW expression SEMICOLON
-	)+ ESAC													# case
-	| NEW TYPEID											# new
-	| INTEGER_NEGATIVE expression							# negative
-	| ISVOID expression										# isvoid
-	| expression MULTIPLY expression						# multiply
-	| expression DIVISION expression						# division
-	| expression ADD expression								# add
-	| expression MINUS expression							# minus
-	| expression LESS_THAN expression						# lessThan
-	| expression LESS_OR_EQUAL expression					# lessEqual
-	| expression EQUAL expression							# equal
-	| NOT expression										# boolNot
-	| OPENING_PARENTHESIS expression CLOSING_PARENTHESIS	# parentheses
-	| OBJECTID												# id
-	| INT													# int
-	| STRING												# string
-	| TRUE													# true
-	| FALSE													# false
-	| OBJECTID ASSIGNMENT expression						# assignment;
+		arguments += expression (COMMA arguments += expression)*
+	)? CLOSING_PARENTHESIS																		# ownMethodCall
+	| IF condition = expression THEN consequent = expression ELSE ifAlternative = expression FI	# if
+	| WHILE condition = expression LOOP body = expression POOL									# while
+	| OPENING_BRACE (expression SEMICOLON)+ CLOSING_BRACE										# block
+	| LET variable ( COMMA variable)* IN expression												# let
+	| CASE expression OF (alternative SEMICOLON)+ ESAC											# case
+	| NEW TYPEID																				# new
+	| INTEGER_NEGATIVE expression																# negative
+	| ISVOID expression																			# isvoid
+	| lhs = expression op = (MULTIPLY | DIVISION) rhs = expression								# multiplication
+	| lhs = expression op = (ADD | MINUS) rhs = expression										# addition
+	| lhs = expression op = (LESS_THAN | LESS_OR_EQUAL | EQUAL) rhs = expression				# relational
+	| NOT expression																			# not
+	| OPENING_PARENTHESIS expression CLOSING_PARENTHESIS										# enclosed
+	| OBJECTID																					# id
+	| INT																						# int
+	| STRING																					# string
+	| BOOL																						# bool
+	| OBJECTID ASSIGNMENT expression															# assignment;

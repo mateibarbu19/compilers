@@ -3,7 +3,7 @@
 
 lexer grammar CoolLexer;
 
-// "Artifical" tokens
+// "Artificial" tokens
 tokens {
 	ERROR
 }
@@ -36,18 +36,19 @@ fragment T: [tT];
 fragment U: [uU];
 fragment V: [vV];
 fragment W: [wW];
-fragment LOWER_PRINTABLE_ASCII: [\u0020-\u007e];
+fragment LOWER_PRINTABLE_ASCII:
+	~[\u0000-\u001F\u007F\u0080\u009F];
 fragment NEWLINE: '\r'? '\n';
-fragment ESCAPED:
-	'\\' (NEWLINE | LOWER_PRINTABLE_ASCII)?;
-	// every blackslash comes in a pair with a character it escapes
+fragment ESCAPED: '\\' (NEWLINE | LOWER_PRINTABLE_ASCII)?;
+// every backslash comes in a pair with a character it escapes
 fragment STRING_CHR:
-	[\u0020-\u0021\u0023-\u005b\u005d-\u007e]; // everything but blackslash and quotation mark
+	~[\u0000-\u001F\u007F\u0080\u009F\u0022\u005c]; // everything but backslash and quotation mark
+fragment TRUE: 't' R U E;
+fragment FALSE: 'f' A L S E;
 
 // KEYWORDS
 CLASS: C L A S S;
 ELSE: E L S E;
-FALSE: 'f' A L S E;
 FI: F I;
 IF: I F;
 IN: I N;
@@ -63,7 +64,6 @@ ESAC: E S A C;
 NEW: N E W;
 OF: O F;
 NOT: N O T;
-TRUE: 't' R U E;
 
 // PRIMITIVES
 STRING:
@@ -81,7 +81,7 @@ STRING:
 					replace("\\f", "\f").
 					replace("\\\n", "\n");
 
-		// Replace any sequnce of "\" and a normal character
+		// Replace any sequence of "\" and a normal character
 		str = str.replaceAll("\\\\([\u0020-\u007e])", "$1");
 
 		if (str.length() > 1024) {
@@ -94,13 +94,21 @@ STRING:
 INT: [0-9]+;
 TYPEID: [A-Z] [_0-9A-Za-z]*;
 OBJECTID: [a-z] [_0-9A-Za-z]*;
+BOOL: TRUE | FALSE;
 
 // COMMENTS
 fragment OPENING_COMMENT: '(*';
 fragment CLOSING_COMMENT: '*)';
+fragment BEGINNING_ONE_LINE_COMMENT: '--';
+
 COMMENT:
-	OPENING_COMMENT (COMMENT | .)*? CLOSING_COMMENT -> skip;
-ONE_LINE_COMMENT: '--' .*? NEWLINE? -> skip;
+	OPENING_COMMENT (COMMENT | .)*? (
+		CLOSING_COMMENT {skip();}
+		| EOF { raiseError("EOF in comment"); }
+	);
+
+ONE_LINE_COMMENT:
+	BEGINNING_ONE_LINE_COMMENT .*? (NEWLINE | EOF) -> skip;
 
 // SYMBOLS/OPERATORS
 COMMA: ',';
@@ -123,7 +131,7 @@ INTEGER_NEGATIVE: '~';
 AT: '@';
 DOT: '.';
 
-// skip spaces, tabs, newlines, note that \v is not suppoted in antlr
+// skip spaces, tabs, newlines, note that \v is not supported in antlr
 WHITESPACE: [ \t\r\n\f]+ -> skip;
 
 // ERROR handling
@@ -136,9 +144,6 @@ INVALID_STRING:
 
 INVALID_CLOSING_COMMENT:
 	CLOSING_COMMENT { raiseError("Unmatched "+ getText()); };
-
-INVALID_COMMENT:
-	OPENING_COMMENT (COMMENT | .)*? EOF { raiseError("EOF in comment"); };
 
 EMPTY_FILE: EOF { raiseError("Empty file"); };
 
