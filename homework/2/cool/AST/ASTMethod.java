@@ -2,7 +2,7 @@ package cool.AST;
 
 import java.util.List;
 
-import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.ParserRuleContext;
 
 import cool.visitor.ASTVisitor;
 
@@ -12,9 +12,10 @@ public class ASTMethod extends ASTFeature {
     ASTTypeId type;
     ASTExpression body;
 
-    public ASTMethod(final Token start, final ASTMethodId name, final List<ASTFormal> parameters, final ASTTypeId type,
+    public ASTMethod(final ParserRuleContext context, final ASTMethodId name,
+            final List<ASTFormal> parameters, final ASTTypeId type,
             final ASTExpression body) {
-        super(start);
+        super(context);
         this.name = name;
         this.type = type;
         this.parameters = parameters;

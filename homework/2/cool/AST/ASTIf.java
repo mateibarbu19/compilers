@@ -1,6 +1,6 @@
 package cool.AST;
 
-import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.ParserRuleContext;
 
 import cool.visitor.ASTVisitor;
 
@@ -9,9 +9,10 @@ public class ASTIf extends ASTExpression {
     ASTExpression consequent;
     ASTExpression alternative;
 
-    public ASTIf(final Token start, final ASTExpression condition, final ASTExpression consequent,
+    public ASTIf(final ParserRuleContext context, final ASTExpression condition,
+            final ASTExpression consequent,
             final ASTExpression alternative) {
-        super(start);
+        super(context);
         this.condition = condition;
         this.consequent = consequent;
         this.alternative = alternative;

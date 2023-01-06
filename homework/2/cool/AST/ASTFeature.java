@@ -1,9 +1,9 @@
 package cool.AST;
 
-import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.ParserRuleContext;
 
 public abstract class ASTFeature extends ASTNode {
-    public ASTFeature(final Token start) {
-        super(start);
+    public ASTFeature(final ParserRuleContext context) {
+        super(context);
     }
 }

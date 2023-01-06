@@ -2,7 +2,7 @@ package cool.AST;
 
 import java.util.List;
 
-import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.ParserRuleContext;
 
 import cool.visitor.ASTVisitor;
 
@@ -10,8 +10,9 @@ public class ASTLet extends ASTExpression {
     List<ASTVariable> declarations;
     ASTExpression body;
 
-    public ASTLet(final Token start, final List<ASTVariable> declarations, final ASTExpression body) {
-        super(start);
+    public ASTLet(final ParserRuleContext context, final List<ASTVariable> declarations,
+            final ASTExpression body) {
+        super(context);
         this.declarations = declarations;
         this.body = body;
     }

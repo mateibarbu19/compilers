@@ -1,6 +1,6 @@
 package cool.AST;
 
-import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.ParserRuleContext;
 
 import cool.visitor.ASTVisitor;
 
@@ -8,8 +8,9 @@ public class ASTWhile extends ASTExpression {
     ASTExpression condition;
     ASTExpression body;
 
-    public ASTWhile(final Token start, final ASTExpression condition, final ASTExpression body) {
-        super(start);
+    public ASTWhile(final ParserRuleContext context, final ASTExpression condition,
+            final ASTExpression body) {
+        super(context);
         this.condition = condition;
         this.body = body;
     }

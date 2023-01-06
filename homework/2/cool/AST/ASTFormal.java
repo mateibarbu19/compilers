@@ -1,6 +1,6 @@
 package cool.AST;
 
-import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.ParserRuleContext;
 
 import cool.visitor.ASTVisitor;
 
@@ -8,8 +8,8 @@ public class ASTFormal extends ASTNode {
     ASTObjectId name;
     ASTTypeId type;
 
-    public ASTFormal(final Token start, final ASTObjectId name, final ASTTypeId type) {
-        super(start);
+    public ASTFormal(final ParserRuleContext context, final ASTObjectId name, final ASTTypeId type) {
+        super(context);
         this.name = name;
         this.type = type;
     }

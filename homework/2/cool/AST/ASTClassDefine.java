@@ -2,7 +2,7 @@ package cool.AST;
 
 import java.util.List;
 
-import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.ParserRuleContext;
 
 import cool.visitor.ASTVisitor;
 
@@ -11,8 +11,9 @@ public class ASTClassDefine extends ASTNode {
     ASTTypeId parent;
     List<ASTFeature> features;
 
-    public ASTClassDefine(final Token start, final ASTTypeId name, final ASTTypeId parent, final List<ASTFeature> features) {
-        super(start);
+    public ASTClassDefine(final ParserRuleContext context, final ASTTypeId name,
+            final ASTTypeId parent, final List<ASTFeature> features) {
+        super(context);
         this.name = name;
         this.parent = parent;
         this.features = features;

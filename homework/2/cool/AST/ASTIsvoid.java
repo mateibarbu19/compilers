@@ -1,14 +1,14 @@
 package cool.AST;
 
-import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.ParserRuleContext;
 
 import cool.visitor.ASTVisitor;
 
 public class ASTIsvoid extends ASTExpression {
     ASTExpression expression;
 
-    public ASTIsvoid(final Token start, final ASTExpression expression) {
-        super(start);
+    public ASTIsvoid(final ParserRuleContext context, final ASTExpression expression) {
+        super(context);
         this.expression = expression;
     }
 

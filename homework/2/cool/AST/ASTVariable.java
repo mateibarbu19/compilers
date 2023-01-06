@@ -1,7 +1,6 @@
 package cool.AST;
 
-import org.antlr.v4.runtime.Token;
-
+import org.antlr.v4.runtime.ParserRuleContext;
 import cool.visitor.ASTVisitor;
 
 public class ASTVariable extends ASTExpression {
@@ -9,8 +8,9 @@ public class ASTVariable extends ASTExpression {
     ASTTypeId type;
     ASTExpression initialization;
 
-    public ASTVariable(final Token start, final ASTObjectId name, final ASTTypeId type, final ASTExpression initialization) {
-        super(start);
+    public ASTVariable(final ParserRuleContext context, final ASTObjectId name, final ASTTypeId type,
+            final ASTExpression initialization) {
+        super(context);
         this.name = name;
         this.type = type;
         this.initialization = initialization;

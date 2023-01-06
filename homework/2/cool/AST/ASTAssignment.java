@@ -1,15 +1,15 @@
 package cool.AST;
 
-import org.antlr.v4.runtime.Token;
-
+import org.antlr.v4.runtime.ParserRuleContext;
 import cool.visitor.ASTVisitor;
 
 public class ASTAssignment extends ASTExpression {
     ASTObjectId name;
     ASTExpression expression;
 
-    public ASTAssignment(final Token start, final ASTObjectId name, final ASTExpression expression) {
-        super(start);
+    public ASTAssignment(final ParserRuleContext context, final ASTObjectId name,
+            final ASTExpression expression) {
+        super(context);
         this.name = name;
         this.expression = expression;
     }

@@ -1,5 +1,6 @@
 package cool.AST;
 
+import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 
 import cool.visitor.ASTVisitor;
@@ -9,8 +10,9 @@ public class ASTRelational extends ASTExpression {
     Token operator;
     ASTExpression rhs;
 
-    public ASTRelational(final Token start, final ASTExpression lhs, final Token operator, final ASTExpression rhs) {
-        super(start);
+    public ASTRelational(final ParserRuleContext context, final ASTExpression lhs,
+            final Token operator, final ASTExpression rhs) {
+        super(context);
         this.lhs = lhs;
         this.operator = operator;
         this.rhs = rhs;

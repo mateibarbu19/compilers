@@ -2,15 +2,15 @@ package cool.AST;
 
 import java.util.List;
 
-import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.ParserRuleContext;
 
 import cool.visitor.ASTVisitor;
 
 public class ASTProgram extends ASTNode {
     List<ASTClassDefine> classes;
 
-    public ASTProgram(final Token start, final List<ASTClassDefine> classes) {
-        super(start);
+    public ASTProgram(final ParserRuleContext context, final List<ASTClassDefine> classes) {
+        super(context);
         this.classes = classes;
     }
 

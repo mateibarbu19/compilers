@@ -2,15 +2,15 @@ package cool.AST;
 
 import java.util.List;
 
-import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.ParserRuleContext;
 
 import cool.visitor.ASTVisitor;
 
 public class ASTBlock extends ASTExpression {
     List<ASTExpression> statements;
 
-    public ASTBlock(final Token start, final List<ASTExpression> statements) {
-        super(start);
+    public ASTBlock(final ParserRuleContext context, final List<ASTExpression> statements) {
+        super(context);
         this.statements = statements;
     }
 

@@ -1,8 +1,8 @@
 package cool.symbols;
 
 public class Symbol {
-    protected String name;
-    
+    String name;
+
     public Symbol(String name) {
         this.name = name;
     }
@@ -15,5 +15,4 @@ public class Symbol {
     public String toString() {
         return getName();
     }
-
 }

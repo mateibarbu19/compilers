@@ -2,7 +2,7 @@ package cool.AST;
 
 import java.util.List;
 
-import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.ParserRuleContext;
 
 import cool.visitor.ASTVisitor;
 
@@ -12,9 +12,10 @@ public class ASTMethodCall extends ASTExpression {
     ASTMethodId method;
     List<ASTExpression> arguments;
 
-    public ASTMethodCall(final Token start, final ASTExpression caller, ASTTypeId actualCaller, final ASTMethodId method,
+    public ASTMethodCall(final ParserRuleContext context, final ASTExpression caller,
+            ASTTypeId actualCaller, final ASTMethodId method,
             final List<ASTExpression> arguments) {
-        super(start);
+        super(context);
         this.caller = caller;
         this.actualCaller = actualCaller;
         this.method = method;
@@ -53,15 +54,16 @@ public class ASTMethodCall extends ASTExpression {
         return arguments;
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.lang.Object#toString()
      */
-    
+
     @Override
     public String toString() {
         return "ASTMethodCall [caller=" + caller + ", actualCaller=" + actualCaller + ", method=" + method
                 + ", arguments=" + arguments + "]";
     }
 
-    
 }
