@@ -33,8 +33,8 @@ public class ASTStringify implements ASTVisitor<String> {
 		String str = pad("case branch");
 
 		level++;
-		str += pad(alternative.getName());
-		str += pad(alternative.getType());
+		str += alternative.getName().accept(this);
+		str += alternative.getType().accept(this);
 		str += alternative.getBody().accept(this);
 		level--;
 
@@ -58,7 +58,7 @@ public class ASTStringify implements ASTVisitor<String> {
 		String str = pad(ASSIGNAMENT_STR);
 
 		level++;
-		str += pad(assignment.getName());
+		str += assignment.getName().accept(this);
 		str += assignment.getExpression().accept(this);
 		level--;
 
@@ -70,8 +70,8 @@ public class ASTStringify implements ASTVisitor<String> {
 		String str = pad(ATTRIBUTE_STR);
 
 		level++;
-		str += pad(attribute.getName());
-		str += pad(attribute.getType());
+		str += attribute.getName().accept(this);
+		str += attribute.getType().accept(this);
 		str += attribute.getInitialization() == null ? "" : attribute.getInitialization().accept(this);
 		level--;
 
@@ -113,8 +113,8 @@ public class ASTStringify implements ASTVisitor<String> {
 		String str = pad(CLASS_STR);
 
 		level++;
-		str += pad(classDefine.getName());
-		str += classDefine.getParent() == null ? "" : pad(classDefine.getParent());
+		str += classDefine.getName().accept(this);
+		str += classDefine.getParent() == null ? "" : classDefine.getParent().accept(this);
 		str += classDefine.getFeatures().stream().map(
 				expr -> expr.accept(this)).reduce("", String::concat);
 		level--;
@@ -137,16 +137,11 @@ public class ASTStringify implements ASTVisitor<String> {
 		String str = pad(FORMAL_STR);
 
 		level++;
-		str += pad(formal.getName());
-		str += pad(formal.getType());
+		str += formal.getName().accept(this);
+		str += formal.getType().accept(this);
 		level--;
 
 		return str;
-	}
-
-	@Override
-	public String visit(final ASTId id) {
-		return pad(id.getToken());
 	}
 
 	@Override
@@ -193,6 +188,21 @@ public class ASTStringify implements ASTVisitor<String> {
 	}
 
 	@Override
+	public String visit(final ASTMethod method) {
+		String str = pad(METHOD_STR);
+
+		level++;
+		str += method.getName().accept(this);
+		str += method.getParameters().stream().map(
+				expr -> expr.accept(this)).reduce("", String::concat);
+		str += method.getType().accept(this);
+		str += method.getBody().accept(this);
+		level--;
+
+		return str;
+	}
+
+	@Override
 	public String visit(final ASTMethodCall methodCall) {
 		String str = pad(methodCall.getCaller() == null ? IMPLICIT_DISPATCH_STR : EXPLICIT_DISPATCH_STR);
 
@@ -200,10 +210,10 @@ public class ASTStringify implements ASTVisitor<String> {
 		if (methodCall.getCaller() != null) {
 			str += methodCall.getCaller().accept(this);
 			if (methodCall.getActualCaller() != null) {
-				str += pad(methodCall.getActualCaller());
+				str += methodCall.getActualCaller().accept(this);
 			}
 		}
-		str += pad(methodCall.getMethod());
+		str += methodCall.getMethod().accept(this);
 		str += methodCall.getArguments().stream().map(
 				expr -> expr.accept(this)).reduce("", String::concat);
 		level--;
@@ -211,18 +221,8 @@ public class ASTStringify implements ASTVisitor<String> {
 	}
 
 	@Override
-	public String visit(final ASTMethod method) {
-		String str = pad(METHOD_STR);
-
-		level++;
-		str += pad(method.getName());
-		str += method.getParameters().stream().map(
-				expr -> expr.accept(this)).reduce("", String::concat);
-		str += pad(method.getType());
-		str += method.getBody().accept(this);
-		level--;
-
-		return str;
+	public String visit(ASTMethodId methodId) {
+		return pad(methodId.getToken());
 	}
 
 	@Override
@@ -241,7 +241,7 @@ public class ASTStringify implements ASTVisitor<String> {
 		String str = pad(neww.getToken());
 
 		level++;
-		str += pad(neww.getType());
+		str += neww.getType().accept(this);
 		level--;
 
 		return str;
@@ -261,6 +261,11 @@ public class ASTStringify implements ASTVisitor<String> {
 		level--;
 
 		return str;
+	}
+
+	@Override
+	public String visit(ASTObjectId objectId) {
+		return pad(objectId.getToken());
 	}
 
 	@Override
@@ -293,12 +298,17 @@ public class ASTStringify implements ASTVisitor<String> {
 	}
 
 	@Override
+	public String visit(final ASTTypeId typeId) {
+		return pad(typeId.getToken());
+	}
+
+	@Override
 	public String visit(final ASTVariable variable) {
 		String str = pad(VARIABLE_STR);
 
 		level++;
-		str += pad(variable.getName());
-		str += pad(variable.getType());
+		str += variable.getName().accept(this);
+		str += variable.getType().accept(this);
 		str += variable.getInitialization() == null ? "" : variable.getInitialization().accept(this);
 		level--;
 

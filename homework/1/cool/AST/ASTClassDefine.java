@@ -7,11 +7,11 @@ import org.antlr.v4.runtime.Token;
 import cool.visitor.ASTVisitor;
 
 public class ASTClassDefine extends ASTNode {
-    Token name;
-    Token parent;
+    ASTTypeId name;
+    ASTTypeId parent;
     List<ASTFeature> features;
 
-    public ASTClassDefine(final Token start, final Token name, final Token parent, final List<ASTFeature> features) {
+    public ASTClassDefine(final Token start, final ASTTypeId name, final ASTTypeId parent, final List<ASTFeature> features) {
         super(start);
         this.name = name;
         this.parent = parent;
@@ -25,14 +25,14 @@ public class ASTClassDefine extends ASTNode {
     /**
      * @return the name
      */
-    public Token getName() {
+    public ASTTypeId getName() {
         return name;
     }
 
     /**
      * @return the parent
      */
-    public Token getParent() {
+    public ASTTypeId getParent() {
         return parent;
     }
 

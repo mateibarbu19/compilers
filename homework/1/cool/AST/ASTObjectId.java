@@ -4,8 +4,8 @@ import org.antlr.v4.runtime.Token;
 
 import cool.visitor.ASTVisitor;
 
-public class ASTId extends ASTExpression {
-    public ASTId(final Token start) {
+public class ASTObjectId extends ASTExpression {
+    public ASTObjectId(final Token start) {
         super(start);
     }
 

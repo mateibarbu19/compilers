@@ -25,8 +25,6 @@ public interface ASTVisitor<T> {
 
 	T visit(ASTFormal formal);
 
-	T visit(ASTId id);
-
 	T visit(ASTIf iff);
 
 	T visit(ASTInt intt);
@@ -35,9 +33,11 @@ public interface ASTVisitor<T> {
 
 	T visit(ASTLet let);
 
+	T visit(ASTMethod method);
+
 	T visit(ASTMethodCall methodCall);
 
-	T visit(ASTMethod method);
+	T visit(ASTMethodId methodId);
 
 	T visit(ASTNegative negative);
 
@@ -47,11 +47,15 @@ public interface ASTVisitor<T> {
 
 	T visit(ASTNot not);
 
+	T visit(ASTObjectId objectId);
+
 	T visit(ASTProgram program);
 
 	T visit(ASTRelational relational);
 
 	T visit(ASTString string);
+
+	T visit(ASTTypeId typeId);
 
 	T visit(ASTVariable variable);
 

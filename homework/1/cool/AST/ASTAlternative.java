@@ -5,11 +5,11 @@ import org.antlr.v4.runtime.Token;
 import cool.visitor.ASTVisitor;
 
 public class ASTAlternative extends ASTExpression {
-    Token name;
-    Token type;
+    ASTObjectId name;
+    ASTTypeId type;
     ASTExpression body;
 
-    public ASTAlternative(final Token start, final Token name, final Token type, final ASTExpression body) {
+    public ASTAlternative(final Token start, final ASTObjectId name, final ASTTypeId type, final ASTExpression body) {
         super(start);
         this.name = name;
         this.type = type;
@@ -23,14 +23,14 @@ public class ASTAlternative extends ASTExpression {
     /**
      * @return the name
      */
-    public Token getName() {
+    public ASTObjectId getName() {
         return name;
     }
 
     /**
      * @return the type
      */
-    public Token getType() {
+    public ASTTypeId getType() {
         return type;
     }
 

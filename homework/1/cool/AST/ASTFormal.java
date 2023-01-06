@@ -5,10 +5,10 @@ import org.antlr.v4.runtime.Token;
 import cool.visitor.ASTVisitor;
 
 public class ASTFormal extends ASTNode {
-    Token name;
-    Token type;
+    ASTObjectId name;
+    ASTTypeId type;
 
-    public ASTFormal(final Token start, final Token name, final Token type) {
+    public ASTFormal(final Token start, final ASTObjectId name, final ASTTypeId type) {
         super(start);
         this.name = name;
         this.type = type;
@@ -21,14 +21,14 @@ public class ASTFormal extends ASTNode {
     /**
      * @return the name
      */
-    public Token getName() {
+    public ASTObjectId getName() {
         return name;
     }
 
     /**
      * @return the type
      */
-    public Token getType() {
+    public ASTTypeId getType() {
         return type;
     }
 }

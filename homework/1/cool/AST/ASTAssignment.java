@@ -5,10 +5,10 @@ import org.antlr.v4.runtime.Token;
 import cool.visitor.ASTVisitor;
 
 public class ASTAssignment extends ASTExpression {
-    Token name;
+    ASTObjectId name;
     ASTExpression expression;
 
-    public ASTAssignment(final Token start, final Token name, final ASTExpression expression) {
+    public ASTAssignment(final Token start, final ASTObjectId name, final ASTExpression expression) {
         super(start);
         this.name = name;
         this.expression = expression;
@@ -21,7 +21,7 @@ public class ASTAssignment extends ASTExpression {
     /**
      * @return the name
      */
-    public Token getName() {
+    public ASTObjectId getName() {
         return name;
     }
 

@@ -2,6 +2,9 @@ package cool.visitor;
 
 import java.util.stream.Collectors;
 
+import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.tree.TerminalNode;
+
 import cool.AST.*;
 
 import cool.parser.CoolParser.AdditionContext;
@@ -34,6 +37,41 @@ import cool.parser.CoolParser.WhileContext;
 import cool.parser.CoolParserBaseVisitor;
 
 public class ASTConstruction extends CoolParserBaseVisitor<ASTNode> {
+	public ASTObjectId visitObjectId(TerminalNode node) {
+		if (node != null)
+			return new ASTObjectId(node.getSymbol());
+		return null;
+	}
+
+	public ASTObjectId visitObjectId(Token token) {
+		if (token != null)
+			return new ASTObjectId(token);
+		return null;
+	}
+
+	public ASTMethodId visitMethodId(TerminalNode node) {
+		if (node != null)
+			return new ASTMethodId(node.getSymbol());
+		return null;
+	}
+
+	public ASTMethodId visitMethodId(Token token) {
+		if (token != null)
+			return new ASTMethodId(token);
+		return null;
+	}
+
+	public ASTTypeId visitTypeId(TerminalNode node) {
+		if (node != null)
+			return new ASTTypeId(node.getSymbol());
+		return null;
+	}
+
+	public ASTTypeId visitTypeId(Token token) {
+		if (token != null)
+			return new ASTTypeId(token);
+		return null;
+	}
 
 	@Override
 	public ASTNode visitAddition(AdditionContext ctx) {
@@ -43,13 +81,13 @@ public class ASTConstruction extends CoolParserBaseVisitor<ASTNode> {
 
 	@Override
 	public ASTNode visitAlternative(AlternativeContext ctx) {
-		return new ASTAlternative(ctx.start, ctx.OBJECTID().getSymbol(), ctx.TYPEID().getSymbol(),
+		return new ASTAlternative(ctx.start, visitObjectId(ctx.OBJECTID()), visitTypeId(ctx.TYPEID()),
 				(ASTExpression) visit(ctx.expression()));
 	}
 
 	@Override
 	public ASTNode visitAssignment(AssignmentContext ctx) {
-		return new ASTAssignment(ctx.start, ctx.OBJECTID().getSymbol(),
+		return new ASTAssignment(ctx.start, visitObjectId(ctx.OBJECTID()),
 				(ASTExpression) visit(ctx.expression()));
 	}
 
@@ -57,7 +95,7 @@ public class ASTConstruction extends CoolParserBaseVisitor<ASTNode> {
 	public ASTNode visitAttribute(AttributeContext ctx) {
 		var expression = ctx.expression() == null ? null : (ASTExpression) visit(ctx.expression());
 
-		return new ASTAttribute(ctx.start, ctx.OBJECTID().getSymbol(), ctx.TYPEID().getSymbol(), expression);
+		return new ASTAttribute(ctx.start, visitObjectId(ctx.OBJECTID()), visitTypeId(ctx.TYPEID()), expression);
 	}
 
 	@Override
@@ -83,7 +121,7 @@ public class ASTConstruction extends CoolParserBaseVisitor<ASTNode> {
 
 	@Override
 	public ASTNode visitClassDefine(ClassDefineContext ctx) {
-		return new ASTClassDefine(ctx.start, ctx.name, ctx.parent, ctx.feature()
+		return new ASTClassDefine(ctx.start, visitTypeId(ctx.name), visitTypeId(ctx.parent), ctx.feature()
 				.stream()
 				.map(node -> (ASTFeature) visit(node))
 				.collect(Collectors.toList()));
@@ -96,12 +134,12 @@ public class ASTConstruction extends CoolParserBaseVisitor<ASTNode> {
 
 	@Override
 	public ASTNode visitFormal(FormalContext ctx) {
-		return new ASTFormal(ctx.start, ctx.OBJECTID().getSymbol(), ctx.TYPEID().getSymbol());
+		return new ASTFormal(ctx.start, visitObjectId(ctx.OBJECTID()), visitTypeId(ctx.TYPEID()));
 	}
 
 	@Override
 	public ASTNode visitId(IdContext ctx) {
-		return new ASTId(ctx.OBJECTID().getSymbol());
+		return new ASTObjectId(ctx.OBJECTID().getSymbol());
 	}
 
 	@Override
@@ -112,7 +150,7 @@ public class ASTConstruction extends CoolParserBaseVisitor<ASTNode> {
 
 	@Override
 	public ASTNode visitInt(IntContext ctx) {
-		return new ASTId(ctx.INT().getSymbol());
+		return new ASTInt(ctx.INT().getSymbol());
 	}
 
 	@Override
@@ -136,13 +174,13 @@ public class ASTConstruction extends CoolParserBaseVisitor<ASTNode> {
 						.map(node -> (ASTFormal) visit(node))
 						.collect(Collectors.toList());
 
-		return new ASTMethod(ctx.start, ctx.OBJECTID().getSymbol(), paramters, ctx.TYPEID().getSymbol(),
+		return new ASTMethod(ctx.start, visitMethodId(ctx.OBJECTID()), paramters, visitTypeId(ctx.TYPEID()),
 				(ASTExpression) visit(ctx.expression()));
 	}
 
 	@Override
 	public ASTNode visitMethodCall(MethodCallContext ctx) {
-		var actualCaller = ctx.TYPEID() == null ? null : ctx.TYPEID().getSymbol();
+		var actualCaller = ctx.TYPEID() == null ? null : visitTypeId(ctx.TYPEID());
 		var arguments = ctx.arguments == null ? null
 				: ctx.arguments
 						.stream()
@@ -150,7 +188,7 @@ public class ASTConstruction extends CoolParserBaseVisitor<ASTNode> {
 						.collect(Collectors.toList());
 
 		return new ASTMethodCall(ctx.start, (ASTExpression) visit(ctx.caller), actualCaller,
-				ctx.OBJECTID().getSymbol(), arguments);
+				visitMethodId(ctx.OBJECTID()), arguments);
 	}
 
 	@Override
@@ -166,7 +204,7 @@ public class ASTConstruction extends CoolParserBaseVisitor<ASTNode> {
 
 	@Override
 	public ASTNode visitNew(NewContext ctx) {
-		return new ASTNew(ctx.start, ctx.TYPEID().getSymbol());
+		return new ASTNew(ctx.start, visitTypeId(ctx.TYPEID()));
 	}
 
 	@Override
@@ -182,7 +220,7 @@ public class ASTConstruction extends CoolParserBaseVisitor<ASTNode> {
 						.map(node -> (ASTExpression) visit(node))
 						.collect(Collectors.toList());
 
-		return new ASTMethodCall(ctx.start, null, null, ctx.OBJECTID().getSymbol(), arguments);
+		return new ASTMethodCall(ctx.start, null, null, visitMethodId(ctx.OBJECTID()), arguments);
 	}
 
 	@Override
@@ -201,14 +239,14 @@ public class ASTConstruction extends CoolParserBaseVisitor<ASTNode> {
 
 	@Override
 	public ASTNode visitString(StringContext ctx) {
-		return new ASTId(ctx.STRING().getSymbol());
+		return new ASTString(ctx.STRING().getSymbol());
 	}
 
 	@Override
 	public ASTNode visitVariable(VariableContext ctx) {
 		var expression = ctx.expression() == null ? null : (ASTExpression) visit(ctx.expression());
 
-		return new ASTVariable(ctx.start, ctx.OBJECTID().getSymbol(), ctx.TYPEID().getSymbol(), expression);
+		return new ASTVariable(ctx.start, visitObjectId(ctx.OBJECTID()), visitTypeId(ctx.TYPEID()), expression);
 	}
 
 	@Override

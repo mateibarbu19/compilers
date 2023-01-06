@@ -8,11 +8,11 @@ import cool.visitor.ASTVisitor;
 
 public class ASTMethodCall extends ASTExpression {
     ASTExpression caller;
-    Token actualCaller;
-    Token method;
+    ASTTypeId actualCaller;
+    ASTMethodId method;
     List<ASTExpression> arguments;
 
-    public ASTMethodCall(final Token start, final ASTExpression caller, Token actualCaller, final Token method,
+    public ASTMethodCall(final Token start, final ASTExpression caller, ASTTypeId actualCaller, final ASTMethodId method,
             final List<ASTExpression> arguments) {
         super(start);
         this.caller = caller;
@@ -35,14 +35,14 @@ public class ASTMethodCall extends ASTExpression {
     /**
      * @return the actualCaller
      */
-    public Token getActualCaller() {
+    public ASTTypeId getActualCaller() {
         return actualCaller;
     }
 
     /**
      * @return the method
      */
-    public Token getMethod() {
+    public ASTMethodId getMethod() {
         return method;
     }
 
@@ -52,4 +52,16 @@ public class ASTMethodCall extends ASTExpression {
     public List<ASTExpression> getArguments() {
         return arguments;
     }
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
+    
+    @Override
+    public String toString() {
+        return "ASTMethodCall [caller=" + caller + ", actualCaller=" + actualCaller + ", method=" + method
+                + ", arguments=" + arguments + "]";
+    }
+
+    
 }

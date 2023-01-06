@@ -7,12 +7,12 @@ import org.antlr.v4.runtime.Token;
 import cool.visitor.ASTVisitor;
 
 public class ASTMethod extends ASTFeature {
-    Token name;
+    ASTMethodId name;
     List<ASTFormal> parameters;
-    Token type;
+    ASTTypeId type;
     ASTExpression body;
 
-    public ASTMethod(final Token start, final Token name, final List<ASTFormal> parameters, final Token type,
+    public ASTMethod(final Token start, final ASTMethodId name, final List<ASTFormal> parameters, final ASTTypeId type,
             final ASTExpression body) {
         super(start);
         this.name = name;
@@ -28,7 +28,7 @@ public class ASTMethod extends ASTFeature {
     /**
      * @return the name
      */
-    public Token getName() {
+    public ASTMethodId getName() {
         return name;
     }
 
@@ -42,7 +42,7 @@ public class ASTMethod extends ASTFeature {
     /**
      * @return the type
      */
-    public Token getType() {
+    public ASTTypeId getType() {
         return type;
     }
 
