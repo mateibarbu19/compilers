@@ -7,6 +7,9 @@ import cool.lexer.*;
 import cool.parser.*;
 import cool.symbols.SymbolTable;
 import cool.visitor.ASTConstruction;
+import cool.visitor.ASTDefinition;
+import cool.visitor.ASTHierarchy;
+import cool.visitor.ASTResolution;
 import cool.visitor.ASTStringify;
 
 import java.io.*;
@@ -122,17 +125,16 @@ public class Compiler {
             return;
         }
 
-        var astBuilder = new ASTConstruction();
-        var astStringifier = new ASTStringify();
-
-        var astHead = astBuilder.visit(globalTree);
-        System.out.print(astHead.accept(astStringifier));
+        var astHead = (new ASTConstruction()).visit(globalTree);
+        // System.out.print(astHead.accept(new ASTStringify()));
 
         // Populate global scope.
         SymbolTable.defineBasicClasses();
 
-        // TODO Semantic analysis
-        // simple ast.accept will suffice
+        // Semantic analysis
+        astHead.accept(new ASTDefinition());
+        astHead.accept(new ASTHierarchy());
+        astHead.accept(new ASTResolution());
 
         if (SymbolTable.hasSemanticErrors()) {
             System.err.println("Compilation halted");

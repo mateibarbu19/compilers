@@ -4,12 +4,14 @@ import java.util.List;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
+import cool.symbols.TypeSymbol;
 import cool.visitor.ASTVisitor;
 
 public class ASTClassDefine extends ASTNode {
     ASTTypeId name;
     ASTTypeId parent;
     List<ASTFeature> features;
+    TypeSymbol type;
 
     public ASTClassDefine(final ParserRuleContext context, final ASTTypeId name,
             final ASTTypeId parent, final List<ASTFeature> features) {
@@ -42,5 +44,19 @@ public class ASTClassDefine extends ASTNode {
      */
     public List<ASTFeature> getFeatures() {
         return features;
+    }
+
+    /**
+     * @return the type
+     */
+    public TypeSymbol getType() {
+        return type;
+    }
+
+    /**
+     * @param type the type to set
+     */
+    public void setType(TypeSymbol type) {
+        this.type = type;
     }
 }

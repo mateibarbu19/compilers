@@ -7,7 +7,7 @@ import org.antlr.v4.runtime.*;
 import cool.compiler.Compiler;
 import cool.parser.CoolParser;
 import cool.scopes.Scope;
-import cool.scopes.DefaultScope;
+import cool.scopes.GlobalScope;
 
 public class SymbolTable {
     public static Scope globals;
@@ -15,7 +15,7 @@ public class SymbolTable {
     private static boolean semanticErrors;
 
     public static void defineBasicClasses() {
-        globals = new DefaultScope(null);
+        globals = new GlobalScope();
         semanticErrors = false;
 
         globals.add(TypeSymbol.OBJECT);

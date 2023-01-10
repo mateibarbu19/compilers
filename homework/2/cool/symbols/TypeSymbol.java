@@ -2,6 +2,7 @@ package cool.symbols;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import cool.scopes.Scope;
 
@@ -28,7 +29,7 @@ public class TypeSymbol extends Symbol implements Scope {
     }
 
     public TypeSymbol(String name, TypeSymbol parent) {
-        this(name, parent == null ? null : parent.getName());
+        this(name, Optional.ofNullable(parent).map(p -> p.getName()).orElse(null));
 
         this.parent = parent;
     }
@@ -88,5 +89,12 @@ public class TypeSymbol extends Symbol implements Scope {
      */
     public void setParent(TypeSymbol parent) {
         this.parent = parent;
+    }
+
+    /**
+     * @return the parentName
+     */
+    public String getParentName() {
+        return parentName;
     }
 }

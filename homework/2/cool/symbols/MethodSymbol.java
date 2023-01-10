@@ -5,7 +5,7 @@ import java.util.Map;
 
 import cool.scopes.Scope;
 
-public class MethodSymbol extends IdSymbol implements Scope {
+public class MethodSymbol extends Symbol implements Scope {
     Map<String, IdSymbol> knownObjects;
     TypeSymbol parent;
     private TypeSymbol returnType;
