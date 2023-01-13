@@ -12,7 +12,7 @@ public class TypeSymbol extends Symbol implements Scope {
     public static final TypeSymbol INT = new TypeSymbol("Int", OBJECT);
     public static final TypeSymbol STRING = new TypeSymbol("String", OBJECT);
     public static final TypeSymbol IO = new TypeSymbol("IO", OBJECT);
-    // TODO SELF_TYPE
+    public static final TypeSymbol SELF_TYPE = new TypeSymbol("SELF_TYPE", OBJECT);
 
     Map<String, IdSymbol> attributes = new LinkedHashMap<>();
     Map<String, MethodSymbol> methods = new LinkedHashMap<>();
@@ -24,7 +24,13 @@ public class TypeSymbol extends Symbol implements Scope {
         super(name);
         this.parentName = parentName;
 
-        attributes = new LinkedHashMap<>();
+        IdSymbol self = new IdSymbol("self", SELF_TYPE);
+
+        attributes = new LinkedHashMap<>() {
+            {
+                put(self.getName(), self);
+            }
+        };
         methods = new LinkedHashMap<>();
     }
 
@@ -96,5 +102,21 @@ public class TypeSymbol extends Symbol implements Scope {
      */
     public String getParentName() {
         return parentName;
+    }
+
+    /**
+     * @param type
+     * @return
+     */
+    public boolean inherits(TypeSymbol type) {
+        if (this == type) {
+            return true;
+        }
+
+        if (parent != null) {
+            return parent.inherits(type);
+        }
+
+        return false;
     }
 }

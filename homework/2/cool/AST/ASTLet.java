@@ -4,11 +4,13 @@ import java.util.List;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
+import cool.symbols.LetSymbol;
 import cool.visitor.ASTVisitor;
 
 public class ASTLet extends ASTExpression {
     List<ASTVariable> declarations;
     ASTExpression body;
+    LetSymbol symbol;
 
     public ASTLet(final ParserRuleContext context, final List<ASTVariable> declarations,
             final ASTExpression body) {
@@ -33,5 +35,19 @@ public class ASTLet extends ASTExpression {
      */
     public ASTExpression getBody() {
         return body;
+    }
+
+    /**
+     * @return the symbol
+     */
+    public LetSymbol getSymbol() {
+        return symbol;
+    }
+
+    /**
+     * @param symbol the symbol to set
+     */
+    public void setSymbol(LetSymbol symbol) {
+        this.symbol = symbol;
     }
 }

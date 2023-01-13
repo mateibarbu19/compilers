@@ -23,6 +23,7 @@ public class SymbolTable {
         globals.add(TypeSymbol.INT);
         globals.add(TypeSymbol.STRING);
         globals.add(TypeSymbol.IO);
+        globals.add(TypeSymbol.SELF_TYPE);
 
         // Object methods
         var abort = new MethodSymbol("abort", TypeSymbol.OBJECT, TypeSymbol.OBJECT);
@@ -31,10 +32,19 @@ public class SymbolTable {
         var typeName = new MethodSymbol("type_name", TypeSymbol.OBJECT, TypeSymbol.STRING);
         TypeSymbol.OBJECT.add(typeName);
 
-        // TODO copy
+        var copy = new MethodSymbol("copy", TypeSymbol.OBJECT, TypeSymbol.SELF_TYPE);
+        TypeSymbol.OBJECT.add(copy);
 
         // IO methods
-        // TODO out_string, out_int
+        var outString = new MethodSymbol("out_string", TypeSymbol.IO, TypeSymbol.SELF_TYPE);
+        var theString = new IdSymbol("x", TypeSymbol.STRING);
+        outString.add(theString);
+        TypeSymbol.IO.add(outString);
+
+        var outInt = new MethodSymbol("out_int", TypeSymbol.IO, TypeSymbol.SELF_TYPE);
+        var theInt = new IdSymbol("x", TypeSymbol.INT);
+        outInt.add(theInt);
+        TypeSymbol.IO.add(outInt);
 
         var inString = new MethodSymbol("in_string", TypeSymbol.IO, TypeSymbol.STRING);
         TypeSymbol.IO.add(inString);

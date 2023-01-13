@@ -1,12 +1,14 @@
 package cool.symbols;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import cool.scopes.Scope;
 
 public class MethodSymbol extends Symbol implements Scope {
-    Map<String, IdSymbol> knownObjects;
+    Map<String, IdSymbol> parameters;
     TypeSymbol parent;
     private TypeSymbol returnType;
 
@@ -14,7 +16,7 @@ public class MethodSymbol extends Symbol implements Scope {
         super(name);
         this.parent = parent;
 
-        knownObjects = new LinkedHashMap<>();
+        parameters = new LinkedHashMap<>();
     }
 
     public MethodSymbol(String name, TypeSymbol parent, TypeSymbol returnType) {
@@ -29,23 +31,26 @@ public class MethodSymbol extends Symbol implements Scope {
             return false;
         }
 
-        if (knownObjects.containsKey(sym.getName()))
+        // TODO
+        if (parameters.containsKey(sym.getName()))
             return false;
 
-        knownObjects.put(sym.getName(), (IdSymbol) sym);
+        parameters.put(sym.getName(), (IdSymbol) sym);
 
         return true;
     }
 
     @Override
-    public Symbol lookup(String s) {
-        var sym = knownObjects.get(s);
+    public Symbol lookup(String str) {
+        Symbol symbol = parameters.get(str);
 
-        if (sym != null)
-            return sym;
+        if (symbol != null) {
+            return symbol;
+        }
 
-        if (parent != null)
-            return parent.lookup(s);
+        if (parent != null) {
+            return parent.lookup(str);
+        }
 
         return null;
     }
@@ -58,8 +63,8 @@ public class MethodSymbol extends Symbol implements Scope {
     /**
      * @return the knownObjects
      */
-    public Map<String, IdSymbol> getKnownObjects() {
-        return knownObjects;
+    public List<IdSymbol> getParameters() {
+        return parameters.values().stream().collect(Collectors.toList());
     }
 
     /**

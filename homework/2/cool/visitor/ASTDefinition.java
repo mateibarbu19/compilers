@@ -36,8 +36,10 @@ import cool.AST.ASTString;
 import cool.AST.ASTTypeId;
 import cool.AST.ASTVariable;
 import cool.AST.ASTWhile;
+import cool.scopes.CaseScope;
 import cool.scopes.Scope;
 import cool.symbols.IdSymbol;
+import cool.symbols.LetSymbol;
 import cool.symbols.MethodSymbol;
 import cool.symbols.SymbolTable;
 import cool.symbols.TypeSymbol;
@@ -50,7 +52,34 @@ public class ASTDefinition implements ASTVisitor<Void> {
 
     @Override
     public Void visit(ASTAlternative alternative) {
-        // TODO Auto-generated method stub
+        ParserRuleContext ctx = alternative.getContext();
+        Token id = alternative.getName().getToken();
+        String name = id.getText();
+        Token type = alternative.getType().getToken();
+        String typeName = type.getText();
+
+        if (name.equals("self")) {
+            SymbolTable.error(ctx, id, "Case variable has illegal name " + name);
+            alternative.setError(ASTError.SemnaticError);
+            return null;
+        }
+
+        if (typeName.equals("SELF_TYPE")) {
+            SymbolTable.error(ctx, type, "Case variable " + name + " has illegal type " + typeName);
+            alternative.setError(ASTError.SemnaticError);
+            return null;
+        }
+
+        CaseScope caseScope = new CaseScope(currentScope);
+        IdSymbol symbol = new IdSymbol(name, caseScope);
+
+        alternative.getName().setSymbol(symbol);
+        caseScope.add(symbol);
+
+        currentScope = caseScope;
+        alternative.getBody().accept(this);
+        currentScope = caseScope.getParent();
+
         return null;
     }
 
@@ -64,6 +93,16 @@ public class ASTDefinition implements ASTVisitor<Void> {
 
     @Override
     public Void visit(ASTAssignment assignment) {
+        ParserRuleContext ctx = assignment.getContext();
+        Token id = assignment.getName().getToken();
+        String name = id.getText();
+
+        if (name.equals("self")) {
+            SymbolTable.error(ctx, id, "Cannot assign to " + name);
+            assignment.setError(ASTError.SemnaticError);
+            return null;
+        }
+
         assignment.getExpression().accept(this);
 
         return null;
@@ -111,7 +150,8 @@ public class ASTDefinition implements ASTVisitor<Void> {
 
     @Override
     public Void visit(ASTCase casee) {
-        // TODO Auto-generated method stub
+        casee.getAlternatives().forEach(a -> a.accept(this));
+
         return null;
     }
 
@@ -223,7 +263,14 @@ public class ASTDefinition implements ASTVisitor<Void> {
 
     @Override
     public Void visit(ASTLet let) {
-        // TODO Auto-generated method stub
+        LetSymbol symbol = new LetSymbol(currentScope);
+        let.setSymbol(symbol);
+
+        currentScope = symbol;
+        let.getDeclarations().forEach(d -> d.accept(this));
+        let.getBody().accept(this);
+        currentScope = currentScope.getParent();
+
         return null;
     }
 
@@ -319,7 +366,21 @@ public class ASTDefinition implements ASTVisitor<Void> {
 
     @Override
     public Void visit(ASTVariable variable) {
-        // TODO Auto-generated method stub
+        ParserRuleContext ctx = variable.getContext();
+        Token id = variable.getName().getToken();
+        String name = id.getText();
+
+        if (name.equals("self")) {
+            SymbolTable.error(ctx, id, "Let variable has illegal name " + name);
+            variable.setError(ASTError.SemnaticError);
+            return null;
+        }
+
+        IdSymbol symbol = new IdSymbol(name, currentScope);
+        variable.getName().setSymbol(symbol);
+
+        Optional.ofNullable(variable.getInitialization()).ifPresent(e -> e.accept(this));
+
         return null;
     }
 
