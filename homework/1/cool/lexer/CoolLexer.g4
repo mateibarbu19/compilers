@@ -91,10 +91,11 @@ STRING:
 
 		setText(str);
 	};
+
+BOOL: TRUE | FALSE;
 INT: [0-9]+;
 TYPEID: [A-Z] [_0-9A-Za-z]*;
 OBJECTID: [a-z] [_0-9A-Za-z]*;
-BOOL: TRUE | FALSE;
 
 // COMMENTS
 fragment OPENING_COMMENT: '(*';

@@ -47,8 +47,8 @@ expression:
 	| lhs = expression op = (LESS_THAN | LESS_OR_EQUAL | EQUAL) rhs = expression				# relational
 	| NOT expression																			# not
 	| OPENING_PARENTHESIS expression CLOSING_PARENTHESIS										# enclosed
-	| OBJECTID																					# id
 	| INT																						# int
 	| STRING																					# string
 	| BOOL																						# bool
+	| OBJECTID																					# id
 	| OBJECTID ASSIGNMENT expression															# assignment;
