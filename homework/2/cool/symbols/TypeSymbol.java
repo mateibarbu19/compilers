@@ -119,4 +119,8 @@ public class TypeSymbol extends Symbol implements Scope {
 
         return false;
     }
+
+    public boolean comparesWithItself() {
+        return this == TypeSymbol.BOOL || this == TypeSymbol.INT || this == TypeSymbol.STRING;
+    }
 }
