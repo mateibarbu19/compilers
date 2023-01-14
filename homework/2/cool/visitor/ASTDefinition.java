@@ -302,6 +302,16 @@ public class ASTDefinition implements ASTVisitor<Void> {
 
     @Override
     public Void visit(ASTMethodCall methodCall) {
+        ParserRuleContext ctx = methodCall.getContext();
+
+        Optional<String> actualCaller = Optional.ofNullable(methodCall.getActualCaller())
+                .map(aC -> aC.getToken().getText());
+        if (actualCaller.isPresent() && actualCaller.get().equals("SELF_TYPE")) {
+            SymbolTable.error(ctx, methodCall.getActualCaller().getToken(),
+                    "Type of static dispatch cannot be SELF_TYPE");
+            methodCall.setError(ASTError.SemnaticError);
+        }
+
         return null;
     }
 

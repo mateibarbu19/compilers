@@ -3,6 +3,7 @@ package cool.visitor;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
@@ -158,7 +159,6 @@ public class ASTResolution implements ASTVisitor<Optional<TypeSymbol>> {
                     "Type " + retType.get().getName() + " of assigned expression is incompatible with declared type "
                             + type.get().getName() + " of identifier " + name);
             assignment.setError(ASTError.SemnaticError);
-            return type;
         }
 
         if (retType.isPresent()) {
@@ -184,11 +184,11 @@ public class ASTResolution implements ASTVisitor<Optional<TypeSymbol>> {
                 .flatMap(e -> Optional.ofNullable(e.accept(this)).orElse(Optional.empty()));
 
         if (init.isPresent()) {
-            TypeSymbol initType = init.get();
+            TypeSymbol initType = getActualType(init.get().getName(), currentScope);
 
             if (!initType.inherits(type)) {
                 SymbolTable.error(ctx, attribute.getInitialization().getContext().start,
-                        "Type " + initType.getName() + " of initialization expression of attribute " + symbol
+                        "Type " + init.get().getName() + " of initialization expression of attribute " + symbol
                                 + " is incompatible with declared type " + type.getName());
             }
         }
@@ -358,7 +358,7 @@ public class ASTResolution implements ASTVisitor<Optional<TypeSymbol>> {
 
             if (bodyType != returnType) {
                 bodyType = getActualType(bodyType.getName(), symbol);
-                if (!bodyType.inherits(getActualType(returnType.getName(), symbol))) {
+                if (!bodyType.inherits(returnType)) {
                     SymbolTable.error(ctx, method.getBody().getContext().start,
                             "Type " + bodyType + " of the body of method " + name
                                     + " is incompatible with declared return type " + returnType);
@@ -371,7 +371,80 @@ public class ASTResolution implements ASTVisitor<Optional<TypeSymbol>> {
 
     @Override
     public Optional<TypeSymbol> visit(ASTMethodCall methodCall) {
-        return null;
+        if (methodCall.getError() == ASTError.SemnaticError) {
+            return Optional.empty();
+        }
+
+        ParserRuleContext ctx = methodCall.getContext();
+        Optional<ASTExpression> caller = Optional.ofNullable(methodCall.getCaller());
+        TypeSymbol callerType = getActualType(
+                caller.flatMap(c -> c.accept(this))
+                        .orElse(TypeSymbol.SELF_TYPE).getName(),
+                currentScope);
+
+        Optional<String> actualCaller = Optional.ofNullable(methodCall.getActualCaller())
+                .map(aC -> aC.getToken().getText());
+        if (actualCaller.isPresent()) {
+            var actualCallerType = (TypeSymbol) SymbolTable.globals.lookup(actualCaller.get());
+            if (actualCallerType == null) {
+                SymbolTable.error(ctx, methodCall.getActualCaller().getToken(),
+                        "Type " + actualCaller.get() + " of static dispatch is undefined");
+                methodCall.setError(ASTError.SemnaticError);
+                return Optional.empty();
+            }
+
+            if (!callerType.inherits(actualCallerType)) {
+                SymbolTable.error(ctx, methodCall.getActualCaller().getToken(),
+                        "Type " + actualCallerType + " of static dispatch is not a superclass of type " + callerType);
+                methodCall.setError(ASTError.SemnaticError);
+                return Optional.empty();
+            }
+
+            callerType = actualCallerType;
+        }
+
+        String method = methodCall.getMethod().getToken().getText();
+        Symbol symbol = callerType.lookup(method);
+        if (!(symbol instanceof MethodSymbol)) {
+            SymbolTable.error(ctx, methodCall.getMethod().getToken(),
+                    "Undefined method " + method + " in class " + callerType.getName());
+            methodCall.setError(ASTError.SemnaticError);
+            return Optional.empty();
+        }
+
+        var argumentsTypes = methodCall
+                .getArguments()
+                .stream()
+                .map(a -> a.accept(this))
+                .filter(r -> r != null && r.isPresent())
+                .map(Optional::get)
+                .collect(Collectors.toList());
+
+        MethodSymbol methodSymbol = (MethodSymbol) symbol;
+        var parameters = methodSymbol.getParameters();
+        if (argumentsTypes.size() != parameters.size()) {
+            SymbolTable.error(ctx, methodCall.getMethod().getToken(),
+                    "Method " + method + " of class " + callerType.getName()
+                            + " is applied to wrong number of arguments");
+            methodCall.setError(ASTError.SemnaticError);
+            return Optional.empty();
+        }
+
+        for (int i = 0; i != argumentsTypes.size(); i++) {
+            if (!argumentsTypes.get(i).inherits(parameters.get(i).getType())) {
+                SymbolTable.error(ctx, methodCall.getArguments().get(i).getContext().start,
+                        "In call to method " + method + " of class " + callerType.getName() + ", actual type "
+                                + argumentsTypes.get(i).getName() + " of formal parameter "
+                                + parameters.get(i).getName()
+                                + " is incompatible with declared type " + parameters.get(i).getType().getName());
+            }
+        }
+
+        if (methodSymbol.getReturnType() == TypeSymbol.SELF_TYPE) {
+            return caller.map(c -> c.accept(this).orElse(getActualType("SELF_TYPE", currentScope)));
+        }
+
+        return Optional.of(methodSymbol.getReturnType());
     }
 
     @Override
@@ -413,7 +486,7 @@ public class ASTResolution implements ASTVisitor<Optional<TypeSymbol>> {
             return Optional.empty();
         }
 
-        return Optional.of(classType);
+        return Optional.of((TypeSymbol) SymbolTable.globals.lookup(typeName));
     }
 
     @Override
@@ -454,7 +527,7 @@ public class ASTResolution implements ASTVisitor<Optional<TypeSymbol>> {
             return Optional.empty();
         }
 
-        return Optional.of(getActualType(ret.getType().getName(), currentScope));
+        return Optional.of(ret.getType());
     }
 
     @Override
@@ -527,7 +600,7 @@ public class ASTResolution implements ASTVisitor<Optional<TypeSymbol>> {
             return Optional.empty();
         }
 
-        variable.getName().getSymbol().setType(actualType);
+        variable.getName().getSymbol().setType((TypeSymbol) SymbolTable.globals.lookup(typeName));
 
         Optional<TypeSymbol> init = Optional.ofNullable(variable.getInitialization())
                 .flatMap(e -> Optional.ofNullable(e.accept(this)).orElse(Optional.empty()));
@@ -543,7 +616,7 @@ public class ASTResolution implements ASTVisitor<Optional<TypeSymbol>> {
             }
         }
 
-        return Optional.of(actualType);
+        return Optional.of(variable.getName().getSymbol().getType());
     }
 
     @Override
