@@ -18,8 +18,7 @@ main:
     syscall
 
     li $v1 13
-    ble $v1, 64, else
-    syscall
+    bge $v1, 64, else
 
     j end
 

@@ -10,8 +10,22 @@ newline:
 main:
     li $a0 20
 
-loop:
-    ble $a0, 0, end
+loop_1:
+    ble $a0, 0, loop_2
+
+    sw $a0, 0($sp)
+    addi $sp, $sp, -4
+
+    addiu $a0 $a0 -1
+
+    j loop_1
+
+loop_2:
+
+    bge $a0, 21, end
+
+    lw $a0, 4($sp)
+    addi $sp, $sp, 4
 
     li $v0 1           # print_int
     syscall
@@ -21,9 +35,9 @@ loop:
     la $a0, newline
     syscall
 
-    addiu $a0 $t1 -1
+    addiu $a0 $t1 1
 
-    j loop
+    j loop_2
 
 end:
     li $v0 10           # exit
