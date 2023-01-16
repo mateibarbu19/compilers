@@ -110,6 +110,8 @@ public class ASTCodeGen implements ASTVisitor<ST> {
         var name = classDefine.getName().getToken().getText();
         helper.addClassDefine(name, nrAttributes, classMethods);
 
+        helper.addClassInit(name, classDefine.getType().getParentName());
+
         return null;
     }
 

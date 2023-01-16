@@ -1,5 +1,6 @@
 package cool.codegen;
 
+import java.util.HashMap;
 import java.util.List;
 
 import org.stringtemplate.v4.ST;
@@ -8,6 +9,16 @@ import org.stringtemplate.v4.STGroupFile;
 public class CodeGenHelper {
     private static int stringConstCounter = 6;
     private static int intConstCounter = 5;
+
+    private static HashMap<Integer, String> intConsts = new HashMap<Integer, String>() {
+        {
+            put(0, "int_const0");
+            put(6, "int_const1");
+            put(2, "int_const2");
+            put(3, "int_const3");
+            put(4, "int_const4");
+        }
+    };
 
     static STGroupFile templates;
 
@@ -36,12 +47,13 @@ public class CodeGenHelper {
         return templates.getInstanceOf("strConstant")
                 .add("i", stringConstCounter++)
                 .add("size", (int) (4 + Math.ceil((value.length() + 1) / 4)))
-                .add("len", value.length())
+                .add("len", getIntConstAddress(value.length()))
                 .add("str", "\"" + value + "\"");
     }
 
     // HELPERS
     public ST getIntConst(int value) {
+        intConsts.put(value, "int_const" + intConstCounter);
         return templates.getInstanceOf("intConstant")
                 .add("i", intConstCounter++)
                 .add("n", value);
@@ -65,6 +77,13 @@ public class CodeGenHelper {
         intConstants.add("e", getIntConst(value));
     }
 
+    public String getIntConstAddress(int value) {
+        if (!intConsts.containsKey(value)) {
+            addIntConst(value);
+        }
+        return intConsts.get(value);
+    }
+
     // END HELPERS
 
     // CLASS HANDLING
@@ -79,10 +98,16 @@ public class CodeGenHelper {
 
         classProtObjs.add("e", templates.getInstanceOf("classPrototype")
                 .add("name", name)
-                .add("i", stringConstCounter - 1)
+                .add("i", stringConstCounter - 2)
                 .add("size", 3 + nrAttributes));
 
         addClassDispatchTab(name, methodsNames);
+    }
+
+    public void addClassInit(String name, String parent) {
+        classInits.add("e", templates.getInstanceOf("classInit")
+                .add("name", name)
+                .add("parent", parent));
     }
 
     public void addClassDispatchTab(String name, List<String> methodsNames) {

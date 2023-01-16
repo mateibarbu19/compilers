@@ -36,6 +36,41 @@ classPrototype(name, i, size, attributes) ::= <<
 <attributes; separator="\n">
 >>
 
+classInit(name, parent) ::= <<
+<name>_init:
+    addiu $sp $sp -12
+    sw $fp 12($sp)
+    sw $s0 8($sp)
+    sw $ra 4($sp)
+    addiu $fp $sp 4
+    move $s0 $a0
+    jal <parent>_init
+    #TODO: fieldsInits
+    move $a0 $s0
+    lw $fp 12($sp)
+    lw $s0 8($sp)
+    lw $ra 4($sp)
+    addiu $sp $sp 12
+    jr $ra
+>>
+
+method(label, expressions) ::= <<
+<label>:
+    addiu   $sp $sp -12
+    sw      $fp 12($sp)
+    sw      $s0 8($sp)
+    sw      $ra 4($sp)
+    addiu   $fp $sp 4
+    move    $s0 $a0
+<expressions; separator="\n">
+    lw      $fp 12($sp)
+    lw      $s0 8($sp)
+    lw      $ra 4($sp)
+    addiu   $sp $sp 12
+    # TODO: free params from stack
+    jr      $ra
+>>
+
 program(strConstants, intConstants, classNameTabs, classObjTabs, classProtObjs, classDispatchTabs, classInits, methodDefines) ::= <<
 	.data
     .align 2
@@ -156,10 +191,12 @@ Object_protObj:
     .word 0
     .word 3
     .word Object_dispTab
+
 IO_protObj:
     .word 1
     .word 3
     .word IO_dispTab
+
 Int_protObj:
     .word 2
     .word 4
@@ -206,7 +243,6 @@ Bool_dispTab:
     .word Object.type_name
     .word Object.copy
 <classDispatchTabs>
-
     .globl heap_start
 heap_start:
     .word 0
