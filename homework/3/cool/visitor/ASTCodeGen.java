@@ -32,167 +32,189 @@ import cool.AST.ASTString;
 import cool.AST.ASTTypeId;
 import cool.AST.ASTVariable;
 import cool.AST.ASTWhile;
+import cool.codegen.CodeGenHelper;
 
 public class ASTCodeGen implements ASTVisitor<ST> {
     static STGroupFile templates = new STGroupFile("cgen.stg");
 
-    ST mainSection;	// filled directly (through visitor returns)
-	ST dataSection; // filled collaterally ("global" access)
-	ST funcSection; // filled collaterally ("global" access)
+    static CodeGenHelper helper = new CodeGenHelper(templates);
 
     @Override
     public ST visit(ASTAlternative alternative) {
         // TODO Auto-generated method stub
-        return null;
+        throw new UnsupportedOperationException("Not yet implemented");
     }
 
     @Override
     public ST visit(ASTArithmetical arithmetical) {
         // TODO Auto-generated method stub
-        return null;
+        throw new UnsupportedOperationException("Not yet implemented");
     }
 
     @Override
     public ST visit(ASTAssignment assignment) {
         // TODO Auto-generated method stub
-        return null;
+        throw new UnsupportedOperationException("Not yet implemented");
     }
 
     @Override
     public ST visit(ASTAttribute attribute) {
         // TODO Auto-generated method stub
-        return null;
+        throw new UnsupportedOperationException("Not yet implemented");
     }
 
     @Override
     public ST visit(ASTBlock block) {
         // TODO Auto-generated method stub
-        return null;
+        throw new UnsupportedOperationException("Not yet implemented");
     }
 
     @Override
     public ST visit(ASTBool bool) {
         // TODO Auto-generated method stub
-        return null;
+        throw new UnsupportedOperationException("Not yet implemented");
     }
 
     @Override
     public ST visit(ASTCase casee) {
         // TODO Auto-generated method stub
-        return null;
+        throw new UnsupportedOperationException("Not yet implemented");
     }
 
     @Override
     public ST visit(ASTClassDefine classDefine) {
-        // TODO Auto-generated method stub
+        // Define the class
+        if (classDefine.getName().getToken().getText().equals("Main"))
+            // TODO : handle Main class
+            return null;
+
         return null;
     }
 
     @Override
     public ST visit(ASTExpression expression) {
         // TODO Auto-generated method stub
-        return null;
+        throw new UnsupportedOperationException("Not yet implemented");
     }
 
     @Override
     public ST visit(ASTFeature feature) {
         // TODO Auto-generated method stub
-        return null;
+        throw new UnsupportedOperationException("Not yet implemented");
     }
 
     @Override
     public ST visit(ASTFormal formal) {
         // TODO Auto-generated method stub
-        return null;
+        throw new UnsupportedOperationException("Not yet implemented");
     }
 
     @Override
     public ST visit(ASTIf iff) {
         // TODO Auto-generated method stub
-        return null;
+        throw new UnsupportedOperationException("Not yet implemented");
     }
 
     @Override
     public ST visit(ASTInt intt) {
         // TODO Auto-generated method stub
-        return null;
+        throw new UnsupportedOperationException("Not yet implemented");
     }
 
     @Override
     public ST visit(ASTIsvoid isvoid) {
         // TODO Auto-generated method stub
-        return null;
+        throw new UnsupportedOperationException("Not yet implemented");
     }
 
     @Override
     public ST visit(ASTLet let) {
         // TODO Auto-generated method stub
-        return null;
+        throw new UnsupportedOperationException("Not yet implemented");
     }
 
     @Override
     public ST visit(ASTMethod method) {
         // TODO Auto-generated method stub
-        return null;
+        throw new UnsupportedOperationException("Not yet implemented");
     }
 
     @Override
     public ST visit(ASTMethodCall methodCall) {
         // TODO Auto-generated method stub
-        return null;
+        throw new UnsupportedOperationException("Not yet implemented");
     }
 
     @Override
     public ST visit(ASTMethodId methodId) {
         // TODO Auto-generated method stub
-        return null;
+        throw new UnsupportedOperationException("Not yet implemented");
     }
 
     @Override
     public ST visit(ASTNegative negative) {
         // TODO Auto-generated method stub
-        return null;
+        throw new UnsupportedOperationException("Not yet implemented");
     }
 
     @Override
     public ST visit(ASTNew neww) {
         // TODO Auto-generated method stub
-        return null;
+        throw new UnsupportedOperationException("Not yet implemented");
     }
 
     @Override
     public ST visit(ASTNode node) {
         // TODO Auto-generated method stub
-        return null;
+        throw new UnsupportedOperationException("Not yet implemented");
     }
 
     @Override
     public ST visit(ASTNot not) {
         // TODO Auto-generated method stub
-        return null;
+        throw new UnsupportedOperationException("Not yet implemented");
     }
 
     @Override
     public ST visit(ASTObjectId objectId) {
         // TODO Auto-generated method stub
-        return null;
+        throw new UnsupportedOperationException("Not yet implemented");
     }
 
     @Override
     public ST visit(ASTProgram program) {
-        dataSection = templates.getInstanceOf("sequenceSpaced");
-		funcSection = templates.getInstanceOf("sequenceSpaced");
-		mainSection = templates.getInstanceOf("sequence");
+        ST strConstants = templates.getInstanceOf("sequence")
+                        .add("e", helper.getStringConst("Hello World!"));
+
+        ST intConstants = templates.getInstanceOf("sequence")
+                        .add("e", helper.getIntConst(123));
+
+        ST classNameTabs = templates.getInstanceOf("sequence")
+                        .add("e", templates.getInstanceOf("word")
+                                    .add("val", "DEMO_CLASS_NAME ###"));
+
+        ST classObjTabs = templates.getInstanceOf("sequence")
+                        .add("e", templates.getInstanceOf("word")
+                                    .add("val", "DEMO_CLASS_OBJ ###"));
 		
+        ST classDispatchTabs = templates.getInstanceOf("classDisptachTab")
+                        .add("name", "DEMO_CLASS")
+                        .add("methods", templates.getInstanceOf("word")
+                                        .add("val", "DEMO_CLASS.METHOD_1"))
+                        .add("methods", templates.getInstanceOf("word")
+                                        .add("val", "DEMO_CLASS.METHOD_2"));
+
         // TODO here
-		for (var c : program.getClasses())
-			mainSection.add("e", c.accept(this));
+		// for (var c : program.getClasses())
+		// 	mainSection.add("e", c.accept(this));
 		
 		//assembly-ing it all together. HA! get it?
 		var programST = templates.getInstanceOf("program");
-		programST.add("data", dataSection);
-		programST.add("textFuncs", funcSection);
-		programST.add("textMain", mainSection);
+        programST.add("strConstants", strConstants);
+        programST.add("intConstants", intConstants);
+        programST.add("classNameTabs", classNameTabs);
+        programST.add("classObjTabs", classObjTabs);
+        programST.add("classDispatchTabs", classDispatchTabs);
 		
 		return programST;
     }
@@ -200,31 +222,31 @@ public class ASTCodeGen implements ASTVisitor<ST> {
     @Override
     public ST visit(ASTRelational relational) {
         // TODO Auto-generated method stub
-        return null;
+        throw new UnsupportedOperationException("Not yet implemented");
     }
 
     @Override
     public ST visit(ASTString string) {
         // TODO Auto-generated method stub
-        return null;
+        throw new UnsupportedOperationException("Not yet implemented");
     }
 
     @Override
     public ST visit(ASTTypeId typeId) {
         // TODO Auto-generated method stub
-        return null;
+        throw new UnsupportedOperationException("Not yet implemented");
     }
 
     @Override
     public ST visit(ASTVariable variable) {
         // TODO Auto-generated method stub
-        return null;
+        throw new UnsupportedOperationException("Not yet implemented");
     }
 
     @Override
     public ST visit(ASTWhile whilee) {
         // TODO Auto-generated method stub
-        return null;
+        throw new UnsupportedOperationException("Not yet implemented");
     }
     
 }
