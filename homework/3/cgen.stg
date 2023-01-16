@@ -28,7 +28,15 @@ classDisptachTab(name, methods) ::= <<
 <methods; separator="\n">
 >>
 
-program(strConstants, intConstants, classNameTabs, classObjTabs, classDispatchTabs) ::= <<
+classPrototype(name, i, size, attributes) ::= <<
+<name>_protObj:
+    .word <i>
+    .word <size>
+    .word <name>_dispTab
+<attributes; separator="\n">
+>>
+
+program(strConstants, intConstants, classNameTabs, classObjTabs, classProtObjs, classDispatchTabs, classInits, methodDefines) ::= <<
 	.data
     .align 2
     .globl class_nameTab
@@ -88,13 +96,6 @@ str_const5:
     .word int_const4
     .asciiz "Bool"
     .align 2
-str_const6:
-    .word 3
-    .word 6
-    .word String_dispTab
-    .word int_const4
-    .asciiz "Main"
-    .align 2
 <strConstants>
 int_const0:
     .word 2
@@ -138,7 +139,6 @@ class_nameTab:
     .word str_const3
     .word str_const4
     .word str_const5
-    .word str_const6
 <classNameTabs>
 class_objTab:
     .word Object_protObj
@@ -151,8 +151,6 @@ class_objTab:
     .word String_init
     .word Bool_protObj
     .word Bool_init
-    .word Main_protObj
-    .word Main_init
 <classObjTabs>
 Object_protObj:
     .word 0
@@ -179,10 +177,7 @@ Bool_protObj:
     .word 4
     .word Bool_dispTab
     .word 0
-Main_protObj:
-    .word 5
-    .word 3
-    .word Main_dispTab
+<classProtObjs>
 Object_dispTab:
     .word Object.abort
     .word Object.type_name
@@ -210,11 +205,6 @@ Bool_dispTab:
     .word Object.abort
     .word Object.type_name
     .word Object.copy
-Main_dispTab:
-    .word Object.abort
-    .word Object.type_name
-    .word Object.copy
-    .word Main.main
 <classDispatchTabs>
 
     .globl heap_start
@@ -295,31 +285,6 @@ Bool_init:
     lw $ra 4($sp)
     addiu $sp $sp 12
     jr $ra
-Main_init:
-    addiu $sp $sp -12
-    sw $fp 12($sp)
-    sw $s0 8($sp)
-    sw $ra 4($sp)
-    addiu $fp $sp 4
-    move $s0 $a0
-    jal IO_init
-    move $a0 $s0
-    lw $fp 12($sp)
-    lw $s0 8($sp)
-    lw $ra 4($sp)
-    addiu $sp $sp 12
-    jr $ra
-Main.main:
-    addiu $sp $sp -12
-    sw $fp 12($sp)
-    sw $s0 8($sp)
-    sw $ra 4($sp)
-    addiu $fp $sp 4
-    move $s0 $a0
-    la $a0 int_const0
-    lw $fp 12($sp)
-    lw $s0 8($sp)
-    lw $ra 4($sp)
-    addiu $sp $sp 12
-    jr $ra
+<classInits>
+<methodDefines>
 >>

@@ -83,10 +83,10 @@ public class ASTCodeGen implements ASTVisitor<ST> {
 
     @Override
     public ST visit(ASTClassDefine classDefine) {
-        // Define the class
-        if (classDefine.getName().getToken().getText().equals("Main"))
-            // TODO : handle Main class
-            return null;
+        var name = classDefine.getName().getToken().getText();
+        helper.addClassDefine(name);
+
+        
 
         return null;
     }
@@ -183,35 +183,19 @@ public class ASTCodeGen implements ASTVisitor<ST> {
 
     @Override
     public ST visit(ASTProgram program) {
-        ST strConstants = templates.getInstanceOf("sequence")
-                .add("e", helper.getStringConst("Hello World!"));
-
-        ST intConstants = templates.getInstanceOf("sequence")
-                .add("e", helper.getIntConst(123));
-
-        ST classNameTabs = templates.getInstanceOf("sequence")
-                .add("e", templates.getInstanceOf("word")
-                        .add("val", "DEMO_CLASS_NAME ###"));
-
-        ST classObjTabs = templates.getInstanceOf("sequence")
-                .add("e", helper.getWordConst("DEMO_CLASS_OBJ ###"));
-
-        ST classDispatchTabs = templates.getInstanceOf("classDisptachTab")
-                .add("name", "DEMO_CLASS")
-                .add("methods", helper.getWordConst("DEMO_CLASS.METHOD_1"))
-                .add("methods", helper.getWordConst("DEMO_CLASS.METHOD_2"));
-
-        // TODO here
-        // for (var c : program.getClasses())
-        // mainSection.add("e", c.accept(this));
+        for (var c : program.getClasses())
+            c.accept(this);
 
         // assembly-ing it all together. HA! get it?
         var programST = templates.getInstanceOf("program");
-        programST.add("strConstants", strConstants);
-        programST.add("intConstants", intConstants);
-        programST.add("classNameTabs", classNameTabs);
-        programST.add("classObjTabs", classObjTabs);
-        programST.add("classDispatchTabs", classDispatchTabs);
+        programST.add("strConstants", helper.strConstants);
+        programST.add("intConstants", helper.intConstants);
+        programST.add("classNameTabs", helper.classNameTabs);
+        programST.add("classObjTabs", helper.classObjTabs);
+        programST.add("classProtObjs", helper.classProtObjs);
+        programST.add("classDispatchTabs", helper.classDispatchTabs);
+        programST.add("classInits", helper.classInits);
+        programST.add("methodDefines", helper.methodDefines);
 
         return programST;
     }
