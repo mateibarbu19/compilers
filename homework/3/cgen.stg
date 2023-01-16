@@ -36,25 +36,27 @@ classPrototype(name, i, size, attributes) ::= <<
 <attributes; separator="\n">
 >>
 
-classInit(name, parent) ::= <<
+classInit(name, parent, fieldsInits) ::= <<
 <name>_init:
-    addiu $sp $sp -12
-    sw $fp 12($sp)
-    sw $s0 8($sp)
-    sw $ra 4($sp)
-    addiu $fp $sp 4
-    move $s0 $a0
-    jal <parent>_init
+    addiu   $sp $sp -12
+    sw      $fp 12($sp)
+    sw      $s0 8($sp)
+    sw      $ra 4($sp)
+    addiu   $fp $sp 4
+    move    $s0 $a0
+    jal     <parent>_init
+<if (fieldsInits)>
     #TODO: fieldsInits
-    move $a0 $s0
-    lw $fp 12($sp)
-    lw $s0 8($sp)
-    lw $ra 4($sp)
-    addiu $sp $sp 12
-    jr $ra
+<endif>
+    move    $a0 $s0
+    lw      $fp 12($sp)
+    lw      $s0 8($sp)
+    lw      $ra 4($sp)
+    addiu   $sp $sp 12
+    jr      $ra
 >>
 
-method(label, expressions) ::= <<
+methodDefine(label, expression, params_size) ::= <<
 <label>:
     addiu   $sp $sp -12
     sw      $fp 12($sp)
@@ -62,12 +64,14 @@ method(label, expressions) ::= <<
     sw      $ra 4($sp)
     addiu   $fp $sp 4
     move    $s0 $a0
-<expressions; separator="\n">
+<expression; separator="\n">
     lw      $fp 12($sp)
     lw      $s0 8($sp)
     lw      $ra 4($sp)
     addiu   $sp $sp 12
-    # TODO: free params from stack
+<if (params_size)>
+    addiu   $sp $sp <params_sizes> # params free
+<endif>
     jr      $ra
 >>
 

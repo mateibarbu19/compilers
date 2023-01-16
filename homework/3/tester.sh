@@ -14,7 +14,7 @@
 #	fi
 #done
 
-CLASSPATH=.:/usr/local/lib/antlr4.jar
+CLASSPATH=bin:/usr/local/lib/antlr4.jar
 
 passed=0
 for source_file in ./tests/tema3/*.cl; do

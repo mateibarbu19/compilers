@@ -64,8 +64,7 @@ public class ASTCodeGen implements ASTVisitor<ST> {
 
     @Override
     public ST visit(ASTAttribute attribute) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Not yet implemented");
+        return null;
     }
 
     @Override
@@ -111,6 +110,8 @@ public class ASTCodeGen implements ASTVisitor<ST> {
         helper.addClassDefine(name, nrAttributes, classMethods);
 
         helper.addClassInit(name, classDefine.getType().getParentName());
+
+        classDefine.getFeatures().forEach(f -> f.accept(this));
 
         return null;
     }
@@ -159,8 +160,16 @@ public class ASTCodeGen implements ASTVisitor<ST> {
 
     @Override
     public ST visit(ASTMethod method) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Not yet implemented");
+        // Optional.ofNullable(method.getBody().accept(this)).map(st ->
+        // st.render()).orElse(""),
+        var symbol = method.getName().getSymbol();
+        var className = ((TypeSymbol) symbol.getParent()).getName();
+        helper.addMethod(
+                className + "." + symbol.getName(),
+                "    la      $a0 int_const0",
+                method.getParameters().size());
+
+        return null;
     }
 
     @Override
@@ -207,8 +216,7 @@ public class ASTCodeGen implements ASTVisitor<ST> {
 
     @Override
     public ST visit(ASTProgram program) {
-        for (var c : program.getClasses())
-            c.accept(this);
+        program.getClasses().forEach(this::visit);
 
         // assembly-ing it all together. HA! get it?
         var programST = templates.getInstanceOf("program");

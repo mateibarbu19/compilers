@@ -127,4 +127,16 @@ public class CodeGenHelper {
     }
 
     // END CLASS HANDLING
+
+    public void addMethod(String name, String body, int nrParmas) {
+        var methodDefine = templates.getInstanceOf("methodDefine")
+                .add("label", name)
+                .add("expression", body);
+
+        if (nrParmas != 0) {
+            methodDefine.add("params_size", nrParmas * 4);
+        }
+
+        methodDefines.add("e", methodDefine);
+    }
 }
