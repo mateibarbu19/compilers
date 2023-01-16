@@ -6,14 +6,13 @@ import org.antlr.v4.runtime.tree.*;
 import cool.lexer.*;
 import cool.parser.*;
 import cool.symbols.SymbolTable;
+import cool.visitor.ASTCodeGen;
 import cool.visitor.ASTConstruction;
 import cool.visitor.ASTDefinition;
 import cool.visitor.ASTHierarchy;
 import cool.visitor.ASTResolution;
-import cool.visitor.ASTStringify;
 
 import java.io.*;
-import java.util.List;
 
 public class Compiler {
     // Annotates class nodes with the names of files where they are defined.
@@ -139,5 +138,8 @@ public class Compiler {
             System.err.println("Compilation halted");
             return;
         }
+
+        // Code generation
+        System.out.println(astHead.accept(new ASTCodeGen()).render());
     }
 }
