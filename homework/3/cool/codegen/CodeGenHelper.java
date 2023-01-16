@@ -20,7 +20,6 @@ public class CodeGenHelper {
     public ST classInits;
     public ST methodDefines;
 
-
     public CodeGenHelper(STGroupFile t) {
         templates = t;
         strConstants = templates.getInstanceOf("sequence");
@@ -40,7 +39,6 @@ public class CodeGenHelper {
                 .add("len", value.length())
                 .add("str", "\"" + value + "\"");
     }
-
 
     // HELPERS
     public ST getIntConst(int value) {
@@ -69,27 +67,29 @@ public class CodeGenHelper {
 
     // END HELPERS
 
-
-
     // CLASS HANDLING
 
-    public void addClassDefine(String name) {
+    public void addClassDefine(String name, int nrAttributes, List<String> methodsNames) {
         addStringConst(name);
+
         addClassObjTab(name);
+
         // TODO: check Danger zone
         classNameTabs.add("e", getWordConst("str_const" + (stringConstCounter - 1)));
+
         classProtObjs.add("e", templates.getInstanceOf("classPrototype")
-                                .add("name", name)
-                                .add("i", stringConstCounter - 1)
-                                // TODO: add size calculation and class fields
-                                .add("size", 3));
+                .add("name", name)
+                .add("i", stringConstCounter - 1)
+                .add("size", 3 + nrAttributes));
+
+        addClassDispatchTab(name, methodsNames);
     }
 
-    public void addClassDispatchTab(String name, List<String> methods) {
+    public void addClassDispatchTab(String name, List<String> methodsNames) {
         ST classDispatchTab = templates.getInstanceOf("classDisptachTab")
                 .add("name", name);
 
-        for (String method : methods) {
+        for (String method : methodsNames) {
             classDispatchTab.add("methods", getWordConst(method));
         }
 

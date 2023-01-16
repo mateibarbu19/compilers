@@ -1,5 +1,9 @@
 package cool.visitor;
 
+import java.util.LinkedList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.stringtemplate.v4.ST;
 import org.stringtemplate.v4.STGroupFile;
 
@@ -32,6 +36,7 @@ import cool.AST.ASTString;
 import cool.AST.ASTTypeId;
 import cool.AST.ASTVariable;
 import cool.AST.ASTWhile;
+import cool.symbols.TypeSymbol;
 import cool.codegen.CodeGenHelper;
 
 public class ASTCodeGen implements ASTVisitor<ST> {
@@ -83,10 +88,27 @@ public class ASTCodeGen implements ASTVisitor<ST> {
 
     @Override
     public ST visit(ASTClassDefine classDefine) {
-        var name = classDefine.getName().getToken().getText();
-        helper.addClassDefine(name);
+        int nrAttributes = 0;
+        var type = classDefine.getType();
+        List<String> classMethods = new LinkedList<>();
 
-        
+        while (type != null) {
+            nrAttributes += type.getAttributesNames().size() - 1;
+
+            final var typeName = type.getName();
+            var typeMethods = type.getMethodsNames()
+                    .stream()
+                    .map(methodName -> typeName + "." + methodName)
+                    .collect(Collectors.toList());
+
+            typeMethods.addAll(classMethods);
+            classMethods = typeMethods;
+
+            type = (TypeSymbol) type.getParent();
+        }
+
+        var name = classDefine.getName().getToken().getText();
+        helper.addClassDefine(name, nrAttributes, classMethods);
 
         return null;
     }

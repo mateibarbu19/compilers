@@ -1,8 +1,10 @@
 package cool.symbols;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import cool.scopes.Scope;
 
@@ -122,5 +124,19 @@ public class TypeSymbol extends Symbol implements Scope {
 
     public boolean comparesWithItself() {
         return this == TypeSymbol.BOOL || this == TypeSymbol.INT || this == TypeSymbol.STRING;
+    }
+
+    /**
+     * @return the methods
+     */
+    public List<String> getMethodsNames() {
+        return methods.keySet().stream().collect(Collectors.toList());
+    }
+
+    /**
+     * @return the attributes
+     */
+    public List<String> getAttributesNames() {
+        return attributes.keySet().stream().collect(Collectors.toList());
     }
 }
