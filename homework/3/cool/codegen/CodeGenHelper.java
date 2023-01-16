@@ -26,4 +26,14 @@ public class CodeGenHelper {
                 .add("i", intConstCounter++)
                 .add("n", value);
     }
+
+    public ST getWordConst(int immediate) {
+        return templates.getInstanceOf("word")
+                .add("val", immediate);
+    }
+
+    public ST getWordConst(String label) {
+        return templates.getInstanceOf("word")
+                .add("val", label);
+    }
 }

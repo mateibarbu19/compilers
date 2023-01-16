@@ -184,39 +184,36 @@ public class ASTCodeGen implements ASTVisitor<ST> {
     @Override
     public ST visit(ASTProgram program) {
         ST strConstants = templates.getInstanceOf("sequence")
-                        .add("e", helper.getStringConst("Hello World!"));
+                .add("e", helper.getStringConst("Hello World!"));
 
         ST intConstants = templates.getInstanceOf("sequence")
-                        .add("e", helper.getIntConst(123));
+                .add("e", helper.getIntConst(123));
 
         ST classNameTabs = templates.getInstanceOf("sequence")
-                        .add("e", templates.getInstanceOf("word")
-                                    .add("val", "DEMO_CLASS_NAME ###"));
+                .add("e", templates.getInstanceOf("word")
+                        .add("val", "DEMO_CLASS_NAME ###"));
 
         ST classObjTabs = templates.getInstanceOf("sequence")
-                        .add("e", templates.getInstanceOf("word")
-                                    .add("val", "DEMO_CLASS_OBJ ###"));
-		
+                .add("e", helper.getWordConst("DEMO_CLASS_OBJ ###"));
+
         ST classDispatchTabs = templates.getInstanceOf("classDisptachTab")
-                        .add("name", "DEMO_CLASS")
-                        .add("methods", templates.getInstanceOf("word")
-                                        .add("val", "DEMO_CLASS.METHOD_1"))
-                        .add("methods", templates.getInstanceOf("word")
-                                        .add("val", "DEMO_CLASS.METHOD_2"));
+                .add("name", "DEMO_CLASS")
+                .add("methods", helper.getWordConst("DEMO_CLASS.METHOD_1"))
+                .add("methods", helper.getWordConst("DEMO_CLASS.METHOD_2"));
 
         // TODO here
-		// for (var c : program.getClasses())
-		// 	mainSection.add("e", c.accept(this));
-		
-		//assembly-ing it all together. HA! get it?
-		var programST = templates.getInstanceOf("program");
+        // for (var c : program.getClasses())
+        // mainSection.add("e", c.accept(this));
+
+        // assembly-ing it all together. HA! get it?
+        var programST = templates.getInstanceOf("program");
         programST.add("strConstants", strConstants);
         programST.add("intConstants", intConstants);
         programST.add("classNameTabs", classNameTabs);
         programST.add("classObjTabs", classObjTabs);
         programST.add("classDispatchTabs", classDispatchTabs);
-		
-		return programST;
+
+        return programST;
     }
 
     @Override
@@ -248,5 +245,4 @@ public class ASTCodeGen implements ASTVisitor<ST> {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Not yet implemented");
     }
-    
 }
