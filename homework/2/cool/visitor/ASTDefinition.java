@@ -171,7 +171,7 @@ public class ASTDefinition implements ASTVisitor<Void> {
         String parentName = parent.map(p -> p.getText()).orElse("Object");
 
         // by all means ignore the parent name for now as it may not be defined
-        TypeSymbol type = new TypeSymbol(name, parentName);
+        TypeSymbol type = new TypeSymbol(classDefine, name, parentName);
         if (!SymbolTable.globals.add(type)) {
             SymbolTable.error(ctx, token, "Class " + name + " is redefined");
             classDefine.setError(ASTError.SemnaticError);

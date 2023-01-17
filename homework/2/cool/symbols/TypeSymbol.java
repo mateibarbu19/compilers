@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import cool.AST.ASTClassDefine;
 import cool.scopes.Scope;
 
 public class TypeSymbol extends Symbol implements Scope {
@@ -21,9 +22,11 @@ public class TypeSymbol extends Symbol implements Scope {
 
     TypeSymbol parent;
     String parentName; // because of forward references
+    ASTClassDefine classDefine; // to get parent attributes
 
-    public TypeSymbol(String name, String parentName) {
+    public TypeSymbol(ASTClassDefine classDefine, String name, String parentName) {
         super(name);
+        this.classDefine = classDefine;
         this.parentName = parentName;
 
         IdSymbol self = new IdSymbol("self", SELF_TYPE);
@@ -37,7 +40,7 @@ public class TypeSymbol extends Symbol implements Scope {
     }
 
     public TypeSymbol(String name, TypeSymbol parent) {
-        this(name, Optional.ofNullable(parent).map(p -> p.getName()).orElse(null));
+        this(null, name, Optional.ofNullable(parent).map(p -> p.getName()).orElse(null));
 
         this.parent = parent;
     }
@@ -138,5 +141,12 @@ public class TypeSymbol extends Symbol implements Scope {
      */
     public List<String> getAttributesNames() {
         return attributes.keySet().stream().collect(Collectors.toList());
+    }
+
+    /**
+     * @return the classDefine
+     */
+    public ASTClassDefine getClassDefine() {
+        return classDefine;
     }
 }
