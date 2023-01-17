@@ -109,7 +109,11 @@ public class ASTCodeGen implements ASTVisitor<ST> {
         List<ASTFeature> attributesList = new LinkedList<>();
         var currClass = classDefine;
         while (currClass != null) {
-            var x = currClass.getFeatures().stream().filter(f -> f instanceof ASTAttribute).collect(Collectors.toList());
+            var x = currClass
+                    .getFeatures()
+                    .stream()
+                    .filter(f -> f instanceof ASTAttribute)
+                    .collect(Collectors.toList());
             x.addAll(attributesList);
             attributesList = x;
 
@@ -118,16 +122,21 @@ public class ASTCodeGen implements ASTVisitor<ST> {
         var attributesDefault = templates.getInstanceOf("sequence");
         attributesList.forEach(a -> attributesDefault.add("e", helper.getAttributeDefaultAddress((ASTAttribute) a)));
 
-
         var name = classDefine.getName().getToken().getText();
         helper.addClassDefine(name, nrAttributes, classMethods, attributesDefault);
 
         ST attributes = templates.getInstanceOf("sequence");
-        attributesList.stream().filter(a -> ((ASTAttribute) a).getInitialization() != null).forEach(a -> attributes
-                                    .add("e", templates.getInstanceOf("fieldInit")
-                                                .add("expr", a.accept(this))
-                                                .add("offset", "TODO matei"))        
-        );
+        {
+            final var tmp = attributesList;
+            classDefine
+                    .getFeatures()
+                    .stream()
+                    .filter(f -> f instanceof ASTAttribute && ((ASTAttribute) f).getInitialization() != null)
+                    .forEach(a -> attributes
+                            .add("e", templates.getInstanceOf("fieldInit")
+                                    .add("expr", a.accept(this))
+                                    .add("offset", 4 * tmp.indexOf(a) + 12)));
+        }
 
         helper.addClassInit(name, classDefine.getType().getParentName(), attributes);
 
@@ -191,8 +200,7 @@ public class ASTCodeGen implements ASTVisitor<ST> {
         helper.addMethod(
                 className + "." + symbol.getName(),
                 body,
-                method.getParameters().size()
-                );
+                method.getParameters().size());
 
         return null;
     }
