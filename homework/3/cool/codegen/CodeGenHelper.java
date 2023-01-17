@@ -7,9 +7,6 @@ import org.stringtemplate.v4.ST;
 import org.stringtemplate.v4.STGroupFile;
 
 import cool.AST.ASTAttribute;
-import cool.AST.ASTBool;
-import cool.AST.ASTInt;
-import cool.AST.ASTString;
 import cool.symbols.TypeSymbol;
 
 public class CodeGenHelper {
