@@ -64,7 +64,7 @@ public class ASTCodeGen implements ASTVisitor<ST> {
 
     @Override
     public ST visit(ASTAttribute attribute) {
-        return null;
+        return attribute.getInitialization().accept(this);
     }
 
     @Override
@@ -75,8 +75,7 @@ public class ASTCodeGen implements ASTVisitor<ST> {
 
     @Override
     public ST visit(ASTBool bool) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Not yet implemented");
+        return templates.getInstanceOf("returnAddres").add("addr", helper.getBoolConstAddress(bool.getValue()));
     }
 
     @Override
@@ -106,12 +105,34 @@ public class ASTCodeGen implements ASTVisitor<ST> {
             type = (TypeSymbol) type.getParent();
         }
 
+        // get this class
+        List<ASTFeature> attributesList = new LinkedList<>();
+        var currClass = classDefine;
+        while (currClass != null) {
+            var x = currClass.getFeatures().stream().filter(f -> f instanceof ASTAttribute).collect(Collectors.toList());
+            x.addAll(attributesList);
+            attributesList = x;
+
+            currClass = ((TypeSymbol) currClass.getType().getParent()).getClassDefine();
+        }
+        var attributesDefault = templates.getInstanceOf("sequence");
+        attributesList.forEach(a -> attributesDefault.add("e", helper.getAttributeDefaultAddress((ASTAttribute) a)));
+
+
         var name = classDefine.getName().getToken().getText();
-        helper.addClassDefine(name, nrAttributes, classMethods);
+        helper.addClassDefine(name, nrAttributes, classMethods, attributesDefault);
 
-        helper.addClassInit(name, classDefine.getType().getParentName());
+        ST attributes = templates.getInstanceOf("sequence");
+        attributesList.stream().filter(a -> ((ASTAttribute) a).getInitialization() != null).forEach(a -> attributes
+                                    .add("e", templates.getInstanceOf("fieldInit")
+                                                .add("expr", a.accept(this))
+                                                .add("offset", "TODO matei"))        
+        );
 
-        classDefine.getFeatures().forEach(f -> f.accept(this));
+        helper.addClassInit(name, classDefine.getType().getParentName(), attributes);
+
+        // visit methods
+        classDefine.getFeatures().stream().filter(f -> f instanceof ASTMethod).forEach(f -> f.accept(this));
 
         return null;
     }
@@ -142,8 +163,7 @@ public class ASTCodeGen implements ASTVisitor<ST> {
 
     @Override
     public ST visit(ASTInt intt) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Not yet implemented");
+        return templates.getInstanceOf("returnAddres").add("addr", helper.getIntConstAddress(intt.getValue()));
     }
 
     @Override
@@ -164,10 +184,15 @@ public class ASTCodeGen implements ASTVisitor<ST> {
         // st.render()).orElse(""),
         var symbol = method.getName().getSymbol();
         var className = ((TypeSymbol) symbol.getParent()).getName();
+
+        // TODO add body evaluation
+        var body = method.getBody().accept(this);
+
         helper.addMethod(
                 className + "." + symbol.getName(),
-                "    la      $a0 int_const0",
-                method.getParameters().size());
+                body,
+                method.getParameters().size()
+                );
 
         return null;
     }
@@ -240,8 +265,7 @@ public class ASTCodeGen implements ASTVisitor<ST> {
 
     @Override
     public ST visit(ASTString string) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Not yet implemented");
+        return templates.getInstanceOf("returnAddres").add("addr", helper.getStringConstAddress(string.getValue()));
     }
 
     @Override

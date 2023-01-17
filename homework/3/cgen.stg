@@ -1,6 +1,8 @@
 sequence(e) ::= "<e; separator=\"\n\">"
 sequenceSpaced(e) ::= "<e; separator=\"\n\n\">"
 
+str(s) ::= "<s>"
+
 strConstant(i, size, len, str) ::= <<
 str_const<i>:
     .word 3
@@ -33,7 +35,7 @@ classPrototype(name, i, size, attributes) ::= <<
     .word <i>
     .word <size>
     .word <name>_dispTab
-<attributes; separator="\n">
+<attributes>
 >>
 
 classInit(name, parent, fieldsInits) ::= <<
@@ -45,9 +47,7 @@ classInit(name, parent, fieldsInits) ::= <<
     addiu   $fp $sp 4
     move    $s0 $a0
     jal     <parent>_init
-<if (fieldsInits)>
-    #TODO: fieldsInits
-<endif>
+<fieldsInits>
     move    $a0 $s0
     lw      $fp 12($sp)
     lw      $s0 8($sp)
@@ -56,7 +56,12 @@ classInit(name, parent, fieldsInits) ::= <<
     jr      $ra
 >>
 
-methodDefine(label, expression, params_size) ::= <<
+fieldInit(expr, offset) ::= <<
+<expr>
+    sw      $a0 <offset>($s0)
+>>
+
+methodDefine(label, expression, paramsSize) ::= <<
 <label>:
     addiu   $sp $sp -12
     sw      $fp 12($sp)
@@ -69,10 +74,14 @@ methodDefine(label, expression, params_size) ::= <<
     lw      $s0 8($sp)
     lw      $ra 4($sp)
     addiu   $sp $sp 12
-<if (params_size)>
+<if (paramsSize)>
     addiu   $sp $sp <params_sizes> # params free
 <endif>
     jr      $ra
+>>
+
+returnAddres(addr) ::= <<
+    la      $a0 <addr>
 >>
 
 program(strConstants, intConstants, classNameTabs, classObjTabs, classProtObjs, classDispatchTabs, classInits, methodDefines) ::= <<
