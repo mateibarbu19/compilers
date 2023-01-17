@@ -7,9 +7,6 @@ import org.stringtemplate.v4.ST;
 import org.stringtemplate.v4.STGroupFile;
 
 import cool.AST.ASTAttribute;
-import cool.AST.ASTBool;
-import cool.AST.ASTInt;
-import cool.AST.ASTString;
 import cool.symbols.TypeSymbol;
 
 public class CodeGenHelper {
@@ -69,6 +66,7 @@ public class CodeGenHelper {
 
     // region HELPERS
     public ST getStringConst(String value) {
+        strConsts.put(value, "str_const" + stringConstCounter);
         return templates.getInstanceOf("strConstant")
                 .add("i", stringConstCounter++)
                 .add("size", (int) (4 + Math.ceil((value.length() + 1) / 4)))
