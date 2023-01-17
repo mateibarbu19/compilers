@@ -23,4 +23,11 @@ public class ASTInt extends ASTExpression {
     public Token getToken() {
         return token;
     }
+
+    /**
+     * @return the value
+     */
+    public Integer getValue() {
+        return Integer.parseInt(token.getText());
+    }
 }

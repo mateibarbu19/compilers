@@ -23,4 +23,14 @@ public class ASTBool extends ASTExpression {
     public Token getToken() {
         return token;
     }
+
+    /**
+     * @return the value
+     */
+    public Boolean getValue() {
+        if (token.getText().startsWith("t")) {
+            return true;
+        }
+        return false;
+    }
 }

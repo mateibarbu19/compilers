@@ -23,4 +23,11 @@ public class ASTString extends ASTExpression {
     public Token getToken() {
         return token;
     }
+
+    /**
+     * @return the value
+     */
+    public String getValue() {
+        return token.getText();
+    }
 }
