@@ -403,6 +403,8 @@ public class ASTResolution implements ASTVisitor<Optional<TypeSymbol>> {
             callerType = actualCallerType;
         }
 
+        methodCall.setRuntimeCallerType(callerType);
+
         String method = methodCall.getMethod().getToken().getText();
         Symbol symbol = callerType.lookup(method);
         if (!(symbol instanceof MethodSymbol)) {

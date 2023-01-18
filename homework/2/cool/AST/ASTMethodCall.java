@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
+import cool.symbols.TypeSymbol;
 import cool.visitor.ASTVisitor;
 
 public class ASTMethodCall extends ASTExpression {
@@ -11,6 +12,7 @@ public class ASTMethodCall extends ASTExpression {
     ASTTypeId actualCaller;
     ASTMethodId method;
     List<ASTExpression> arguments;
+    TypeSymbol runtimeCallerType;
 
     public ASTMethodCall(final ParserRuleContext context, final ASTExpression caller,
             ASTTypeId actualCaller, final ASTMethodId method,
@@ -66,4 +68,7 @@ public class ASTMethodCall extends ASTExpression {
                 + ", arguments=" + arguments + "]";
     }
 
+    public void setRuntimeCallerType(TypeSymbol type) {
+        runtimeCallerType = type;
+    }
 }
