@@ -45,7 +45,15 @@ public class CodeGenHelper {
         }
     };
 
-    private static HashMap<String, List<String>> dispatchTables = new HashMap<String, List<String>>();
+    private static HashMap<String, List<String>> dispatchTables = new HashMap<String, List<String>>() {
+        {
+            put("Object", List.of("Object.abort", "Object.type_name", "Object.copy"));
+            put("IO", List.of("Object.abort", "Object.type_name", "Object.copy", "IO.out_string", "IO.out_int", "IO.in_string", "IO.in_int"));
+            put("Int", List.of("Object.abort", "Object.type_name", "Object.copy"));
+            put("String", List.of("Object.abort", "Object.type_name", "Object.copy", "String.length", "String.concat", "String.substr"));
+            put("Bool", List.of("Object.abort", "Object.type_name", "Object.copy"));
+        }
+    };
 
     static STGroupFile templates;
 
@@ -192,7 +200,7 @@ public class CodeGenHelper {
         methodDefines.add("e", methodDefine);
     }
 
-    public ST getMethodCall(ASTMethodCall method, String filename, ST callerAddress) {
+    public ST getMethodCall(ASTMethodCall method, String filename, ST callerAddress, ST arguments) {
         var methodName = method.getMethod().getToken().getText();
 
         var runtimeCallerType = method.getRuntimeCallerType();
@@ -204,17 +212,22 @@ public class CodeGenHelper {
         var dispatch = templates.getInstanceOf("dispatch")
                             .add("i", dispatchCounter++)
                             .add("filename", getStringConstAddress(filename))
-                            .add("methodOffset", offset);
+                            .add("methodOffset", offset)
+                            .add("fileline", method.getMethod().getToken().getLine());
 
         if (callerAddress != null) {
             dispatch.add("callerAddress", callerAddress);
+        }
+
+        if (arguments != null) {
+            dispatch.add("arguments", arguments);
         }
 
         return dispatch;
     }
 
     private int getMethodOffset(String cls, String method) {
-        return dispatchTables.get(cls).indexOf(method);
+        return dispatchTables.get(cls).indexOf(method) * 4;
     }
     //endregion
 

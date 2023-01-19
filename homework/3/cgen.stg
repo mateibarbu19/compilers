@@ -69,7 +69,7 @@ methodDefine(label, expression, paramsSize) ::= <<
     sw      $ra 4($sp)
     addiu   $fp $sp 4
     move    $s0 $a0
-<expression; separator="\n">
+<expression>
     lw      $fp 12($sp)
     lw      $s0 8($sp)
     lw      $ra 4($sp)
@@ -84,7 +84,8 @@ returnAddres(addr) ::= <<
     la      $a0 <addr>
 >>
 
-dispatch(i, filename, methodOffset, callerAddress) ::= <<
+dispatch(i, filename, methodOffset, callerAddress, arguments, fileline) ::= <<
+<arguments>
 <if (callerAddress)>
 <callerAddress>
 <else>
@@ -92,7 +93,7 @@ dispatch(i, filename, methodOffset, callerAddress) ::= <<
 <endif>
     bnez    $a0 dispatch<i>
     la      $a0 <filename>
-    li      $t1 28
+    li      $t1 <fileline>
     jal     _dispatch_abort
 dispatch<i>:
     lw      $t1 8($a0)
@@ -102,6 +103,12 @@ dispatch<i>:
 
 loadWordFromClass(offset) ::= <<
     lw      $a0 <offset>($s0)
+>>
+
+putWordOnStack(address) ::= <<
+<address>
+    sw      $a0 0($sp)
+    addiu   $sp $sp -4
 >>
 
 program(strConstants, intConstants, classNameTabs, classObjTabs, classProtObjs, classDispatchTabs, classInits, methodDefines) ::= <<

@@ -75,8 +75,11 @@ public class ASTCodeGen implements ASTVisitor<ST> {
 
     @Override
     public ST visit(ASTBlock block) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Not yet implemented");
+        var blockST = templates.getInstanceOf("sequence");
+
+        block.getStatements().forEach(e -> blockST.add("e", e.accept(this)));
+
+        return blockST;
     }
 
     @Override
@@ -213,13 +216,17 @@ public class ASTCodeGen implements ASTVisitor<ST> {
 
     @Override
     public ST visit(ASTMethodCall methodCall) {
+        var arguments = templates.getInstanceOf("sequence");
+        methodCall.getArguments().forEach(a -> arguments.add("e", templates.getInstanceOf("putWordOnStack")
+                                                                             .add("address", a.accept(this))));
+
         if (methodCall.getCaller() != null) {
             if (methodCall.getCaller() instanceof ASTObjectId && ((ASTObjectId) methodCall.getCaller()).getToken().getText().equals("self")) {
-                return helper.getMethodCall(methodCall, filename, null);
+                return helper.getMethodCall(methodCall, filename, null, arguments);
             }
-            return helper.getMethodCall(methodCall, filename, methodCall.getCaller().accept(this));
+            return helper.getMethodCall(methodCall, filename, methodCall.getCaller().accept(this), arguments);
         }
-        return helper.getMethodCall(methodCall, filename, null);
+        return helper.getMethodCall(methodCall, filename, null, arguments);
     }
 
     @Override
