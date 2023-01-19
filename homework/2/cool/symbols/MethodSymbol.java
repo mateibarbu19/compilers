@@ -61,7 +61,14 @@ public class MethodSymbol extends Symbol implements Scope {
     }
 
     /**
-     * @return the knownObjects
+     * @return the parametersNames
+     */
+    public List<String> getParametersNames() {
+        return parameters.keySet().stream().collect(Collectors.toList());
+    }
+
+    /**
+     * @return the parameters
      */
     public List<IdSymbol> getParameters() {
         return parameters.values().stream().collect(Collectors.toList());

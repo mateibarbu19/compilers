@@ -5,6 +5,7 @@ import cool.scopes.Scope;
 public class IdSymbol extends Symbol {
 	TypeSymbol type;
 	Scope scope;
+	Scope referencedScope;
 
 	public IdSymbol(String name) {
 		super(name);
@@ -49,5 +50,19 @@ public class IdSymbol extends Symbol {
 	 */
 	public void setScope(Scope scope) {
 		this.scope = scope;
+	}
+
+	/**
+	 * @return the referencedScope
+	 */
+	public Scope getReferencedScope() {
+		return referencedScope;
+	}
+
+	/**
+	 * @param referencedScope the referencedScope to set
+	 */
+	public void setReferencedScope(Scope referencedScope) {
+		this.referencedScope = referencedScope;
 	}
 }
