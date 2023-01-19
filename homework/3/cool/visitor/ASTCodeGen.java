@@ -3,6 +3,7 @@ package cool.visitor;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.stringtemplate.v4.ST;
@@ -65,8 +66,11 @@ public class ASTCodeGen implements ASTVisitor<ST> {
 
     @Override
     public ST visit(ASTAssignment assignment) {
+        assignment.getName().setIsOnLhs(true);
+
         return templates.getInstanceOf("sequence")
-                .add("e", assignment.getExpression().accept(this));
+                .add("e", assignment.getExpression().accept(this))
+                .add("e", assignment.getName().accept(this));
     }
 
     @Override
@@ -134,7 +138,7 @@ public class ASTCodeGen implements ASTVisitor<ST> {
         attributesList.forEach(a -> attributesDefault.add("e", helper.getAttributeDefaultAddress((ASTAttribute) a)));
 
         var name = classDefine.getName().getToken().getText();
-        
+
         helper.addClassAttributes(name, attributesList);
         helper.addClassDefine(name, nrAttributes, classMethods, attributesDefault);
 
@@ -202,17 +206,12 @@ public class ASTCodeGen implements ASTVisitor<ST> {
 
     @Override
     public ST visit(ASTMethod method) {
-        // Optional.ofNullable(method.getBody().accept(this)).map(st ->
-        // st.render()).orElse(""),
         var symbol = method.getName().getSymbol();
         var className = ((TypeSymbol) symbol.getParent()).getName();
 
-        // TODO add body evaluation
-        var body = method.getBody().accept(this);
-
         helper.addMethod(
                 className + "." + symbol.getName(),
-                body,
+                method.getBody().accept(this),
                 method.getParameters().size());
 
         return null;
@@ -226,10 +225,11 @@ public class ASTCodeGen implements ASTVisitor<ST> {
         // reverse arguments
         Collections.reverse(args);
         args.forEach(a -> arguments.add("e", templates.getInstanceOf("putWordOnStack")
-                                                                             .add("address", a.accept(this))));
+                .add("address", a.accept(this))));
 
         if (methodCall.getCaller() != null) {
-            if (methodCall.getCaller() instanceof ASTObjectId && ((ASTObjectId) methodCall.getCaller()).getToken().getText().equals("self")) {
+            if (methodCall.getCaller() instanceof ASTObjectId
+                    && ((ASTObjectId) methodCall.getCaller()).getToken().getText().equals("self")) {
                 return helper.getMethodCall(methodCall, filename, null, arguments);
             }
             return helper.getMethodCall(methodCall, filename, methodCall.getCaller().accept(this), arguments);
@@ -271,14 +271,19 @@ public class ASTCodeGen implements ASTVisitor<ST> {
     public ST visit(ASTObjectId objectId) {
         if (!(objectId.getSymbol().getScope().getParent() instanceof TypeSymbol))
             throw new UnsupportedOperationException("Not yet implemented");
-        
+
         var className = ((TypeSymbol) objectId.getSymbol().getScope().getParent()).getName();
-        var classAttributes = helper.getClassAttributes(className).stream().map(x -> x.getName().getToken().getText()).collect(Collectors.toList());
-        
+        var classAttributes = helper.getClassAttributes(className).stream().map(x -> x.getName().getToken().getText())
+                .collect(Collectors.toList());
+
         var attributeIndex = classAttributes.indexOf(objectId.getToken().getText());
-        
+
+        if (Optional.ofNullable(objectId.getIsOnLhs()).orElse(false)) {
+            return templates.getInstanceOf("saveWordInClass")
+                    .add("offset", 4 * (attributeIndex + 3));
+        }
         return templates.getInstanceOf("loadWordFromClass")
-                        .add("offset", 4 * (attributeIndex + 3));
+                .add("offset", 4 * (attributeIndex + 3));
     }
 
     @Override

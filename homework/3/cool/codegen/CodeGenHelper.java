@@ -7,7 +7,6 @@ import org.stringtemplate.v4.ST;
 import org.stringtemplate.v4.STGroupFile;
 
 import cool.AST.ASTAttribute;
-import cool.AST.ASTFeature;
 import cool.AST.ASTMethodCall;
 import cool.symbols.MethodSymbol;
 import cool.symbols.TypeSymbol;
@@ -49,9 +48,11 @@ public class CodeGenHelper {
     private static HashMap<String, List<String>> dispatchTables = new HashMap<String, List<String>>() {
         {
             put("Object", List.of("Object.abort", "Object.type_name", "Object.copy"));
-            put("IO", List.of("Object.abort", "Object.type_name", "Object.copy", "IO.out_string", "IO.out_int", "IO.in_string", "IO.in_int"));
+            put("IO", List.of("Object.abort", "Object.type_name", "Object.copy", "IO.out_string", "IO.out_int",
+                    "IO.in_string", "IO.in_int"));
             put("Int", List.of("Object.abort", "Object.type_name", "Object.copy"));
-            put("String", List.of("Object.abort", "Object.type_name", "Object.copy", "String.length", "String.concat", "String.substr"));
+            put("String", List.of("Object.abort", "Object.type_name", "Object.copy", "String.length", "String.concat",
+                    "String.substr"));
             put("Bool", List.of("Object.abort", "Object.type_name", "Object.copy"));
         }
     };
@@ -139,9 +140,9 @@ public class CodeGenHelper {
         return boolConsts.get(value);
     }
 
-    //endregion
+    // endregion
 
-    //region CLASS HANDLING
+    // region CLASS HANDLING
 
     public void addClassDefine(String name, int nrAttributes, List<String> methodsNames, ST attributes) {
         var i = addStringConst(name);
@@ -196,9 +197,9 @@ public class CodeGenHelper {
         return classAttributes.get(className);
     }
 
-    //endregion
+    // endregion
 
-    //region METHOD HANDLING
+    // region METHOD HANDLING
     public void addMethod(String name, ST body, int nrParmas) {
         var methodDefine = templates.getInstanceOf("methodDefine")
                 .add("label", name)
@@ -218,13 +219,14 @@ public class CodeGenHelper {
 
         var s = (MethodSymbol) runtimeCallerType.lookup(methodName);
 
-        var offset = getMethodOffset(runtimeCallerType.getName(), ((TypeSymbol) s.getParent()).getName() + "." + methodName);
+        var offset = getMethodOffset(runtimeCallerType.getName(),
+                ((TypeSymbol) s.getParent()).getName() + "." + methodName);
 
         var dispatch = templates.getInstanceOf("dispatch")
-                            .add("i", dispatchCounter++)
-                            .add("filename", getStringConstAddress(filename))
-                            .add("methodOffset", offset)
-                            .add("fileline", method.getMethod().getToken().getLine());
+                .add("i", dispatchCounter++)
+                .add("filename", getStringConstAddress(filename))
+                .add("methodOffset", offset)
+                .add("fileline", method.getMethod().getToken().getLine());
 
         if (callerAddress != null) {
             dispatch.add("callerAddress", callerAddress);
@@ -240,9 +242,9 @@ public class CodeGenHelper {
     private int getMethodOffset(String cls, String method) {
         return dispatchTables.get(cls).indexOf(method) * 4;
     }
-    //endregion
+    // endregion
 
-    //region DEFAULTS HANDLING
+    // region DEFAULTS HANDLING
     public ST getAttributeDefault(TypeSymbol type) {
         if (type == TypeSymbol.INT) {
             return getWordConst(getIntConstAddress(0));
@@ -255,5 +257,5 @@ public class CodeGenHelper {
         }
         return getWordConst("0");
     }
-    //endregion
+    // endregion
 }

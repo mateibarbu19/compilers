@@ -9,6 +9,7 @@ import cool.visitor.ASTVisitor;
 public class ASTObjectId extends ASTExpression {
     Token token;
     IdSymbol symbol;
+    Boolean isOnLhs;
 
     public ASTObjectId(final ParserRuleContext context, final Token objectId) {
         super(context);
@@ -38,5 +39,19 @@ public class ASTObjectId extends ASTExpression {
      */
     public void setSymbol(IdSymbol symbol) {
         this.symbol = symbol;
+    }
+
+    /**
+     * @return the isOnLhs
+     */
+    public Boolean getIsOnLhs() {
+        return isOnLhs;
+    }
+
+    /**
+     * @param isOnLhs the isOnLhs to set
+     */
+    public void setIsOnLhs(Boolean isOnLhs) {
+        this.isOnLhs = isOnLhs;
     }
 }
