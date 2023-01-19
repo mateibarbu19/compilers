@@ -529,6 +529,10 @@ public class ASTResolution implements ASTVisitor<Optional<TypeSymbol>> {
             return Optional.empty();
         }
 
+        if (objectId.getSymbol() == null) {
+            objectId.setSymbol(ret);
+        }
+
         return Optional.of(ret.getType());
     }
 
