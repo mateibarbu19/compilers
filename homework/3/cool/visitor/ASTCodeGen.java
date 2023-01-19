@@ -38,6 +38,7 @@ import cool.AST.ASTString;
 import cool.AST.ASTTypeId;
 import cool.AST.ASTVariable;
 import cool.AST.ASTWhile;
+import cool.symbols.MethodSymbol;
 import cool.symbols.TypeSymbol;
 import cool.codegen.CodeGenHelper;
 
@@ -272,18 +273,36 @@ public class ASTCodeGen implements ASTVisitor<ST> {
         if (!(objectId.getSymbol().getScope().getParent() instanceof TypeSymbol))
             throw new UnsupportedOperationException("Not yet implemented");
 
-        var className = ((TypeSymbol) objectId.getSymbol().getScope().getParent()).getName();
-        var classAttributes = helper.getClassAttributes(className).stream().map(x -> x.getName().getToken().getText())
-                .collect(Collectors.toList());
+        if (objectId.getSymbol().getScope() instanceof TypeSymbol) {
+            var className = ((TypeSymbol) objectId.getSymbol().getReferencedScope().getParent()).getName();
+            var classAttributes = helper.getClassAttributes(className).stream()
+                    .map(x -> x.getName().getToken().getText())
+                    .collect(Collectors.toList());
 
-        var attributeIndex = classAttributes.indexOf(objectId.getToken().getText());
+            var attributeIndex = classAttributes.indexOf(objectId.getToken().getText());
 
-        if (Optional.ofNullable(objectId.getIsOnLhs()).orElse(false)) {
-            return templates.getInstanceOf("saveWordInClass")
+            if (Optional.ofNullable(objectId.getIsOnLhs()).orElse(false)) {
+                return templates.getInstanceOf("saveWordInClass")
+                        .add("offset", 4 * (attributeIndex + 3));
+            }
+            return templates.getInstanceOf("loadWordFromClass")
+                    .add("offset", 4 * (attributeIndex + 3));
+        } else if (objectId.getSymbol().getScope() instanceof MethodSymbol) {
+            var definedInMethod = ((MethodSymbol) objectId.getSymbol().getScope());
+
+            var attributeIndex = definedInMethod
+                    .getParametersNames()
+                    .indexOf(objectId.getToken().getText());
+
+            if (Optional.ofNullable(objectId.getIsOnLhs()).orElse(false)) {
+                return templates.getInstanceOf("saveWordInArguments")
+                        .add("offset", 4 * (attributeIndex + 3));
+            }
+
+            return templates.getInstanceOf("loadWordFromArguments")
                     .add("offset", 4 * (attributeIndex + 3));
         }
-        return templates.getInstanceOf("loadWordFromClass")
-                .add("offset", 4 * (attributeIndex + 3));
+        return null;
     }
 
     @Override

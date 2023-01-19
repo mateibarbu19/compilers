@@ -206,7 +206,7 @@ public class CodeGenHelper {
                 .add("expression", body);
 
         if (nrParmas != 0) {
-            methodDefine.add("params_size", nrParmas * 4);
+            methodDefine.add("paramsSize", nrParmas * 4);
         }
 
         methodDefines.add("e", methodDefine);
