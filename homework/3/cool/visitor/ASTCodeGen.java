@@ -1,5 +1,6 @@
 package cool.visitor;
 
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -115,13 +116,14 @@ public class ASTCodeGen implements ASTVisitor<ST> {
         }
 
         // get this class
-        List<ASTFeature> attributesList = new LinkedList<>();
+        List<ASTAttribute> attributesList = new LinkedList<>();
         var currClass = classDefine;
         while (currClass != null) {
             var x = currClass
                     .getFeatures()
                     .stream()
                     .filter(f -> f instanceof ASTAttribute)
+                    .map(ASTAttribute.class::cast)
                     .collect(Collectors.toList());
             x.addAll(attributesList);
             attributesList = x;
@@ -132,6 +134,8 @@ public class ASTCodeGen implements ASTVisitor<ST> {
         attributesList.forEach(a -> attributesDefault.add("e", helper.getAttributeDefaultAddress((ASTAttribute) a)));
 
         var name = classDefine.getName().getToken().getText();
+        
+        helper.addClassAttributes(name, attributesList);
         helper.addClassDefine(name, nrAttributes, classMethods, attributesDefault);
 
         ST attributes = templates.getInstanceOf("sequence");
@@ -217,7 +221,11 @@ public class ASTCodeGen implements ASTVisitor<ST> {
     @Override
     public ST visit(ASTMethodCall methodCall) {
         var arguments = templates.getInstanceOf("sequence");
-        methodCall.getArguments().forEach(a -> arguments.add("e", templates.getInstanceOf("putWordOnStack")
+        // copy methodCall arguments
+        var args = new LinkedList<>(methodCall.getArguments());
+        // reverse arguments
+        Collections.reverse(args);
+        args.forEach(a -> arguments.add("e", templates.getInstanceOf("putWordOnStack")
                                                                              .add("address", a.accept(this))));
 
         if (methodCall.getCaller() != null) {
@@ -261,12 +269,16 @@ public class ASTCodeGen implements ASTVisitor<ST> {
 
     @Override
     public ST visit(ASTObjectId objectId) {
-        if (!(objectId.getSymbol().getScope() instanceof TypeSymbol))
+        if (!(objectId.getSymbol().getScope().getParent() instanceof TypeSymbol))
             throw new UnsupportedOperationException("Not yet implemented");
-
-        var attributeIndex = ((TypeSymbol) objectId.getSymbol().getScope()).getAttributesNames().indexOf(objectId.getToken().getText());
+        
+        var className = ((TypeSymbol) objectId.getSymbol().getScope().getParent()).getName();
+        var classAttributes = helper.getClassAttributes(className).stream().map(x -> x.getName().getToken().getText()).collect(Collectors.toList());
+        
+        var attributeIndex = classAttributes.indexOf(objectId.getToken().getText());
+        
         return templates.getInstanceOf("loadWordFromClass")
-                        .add("offset", 4 * (attributeIndex + 4));
+                        .add("offset", 4 * (attributeIndex + 3));
     }
 
     @Override

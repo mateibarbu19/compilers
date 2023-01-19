@@ -7,6 +7,7 @@ import org.stringtemplate.v4.ST;
 import org.stringtemplate.v4.STGroupFile;
 
 import cool.AST.ASTAttribute;
+import cool.AST.ASTFeature;
 import cool.AST.ASTMethodCall;
 import cool.symbols.MethodSymbol;
 import cool.symbols.TypeSymbol;
@@ -54,6 +55,8 @@ public class CodeGenHelper {
             put("Bool", List.of("Object.abort", "Object.type_name", "Object.copy"));
         }
     };
+
+    private static HashMap<String, List<ASTAttribute>> classAttributes = new HashMap<String, List<ASTAttribute>>();
 
     static STGroupFile templates;
 
@@ -183,6 +186,14 @@ public class CodeGenHelper {
 
     public ST getAttributeDefaultAddress(ASTAttribute attribute) {
         return getAttributeDefault(attribute.getName().getSymbol().getType());
+    }
+
+    public void addClassAttributes(String className, List<ASTAttribute> attributes) {
+        classAttributes.put(className, attributes);
+    }
+
+    public List<ASTAttribute> getClassAttributes(String className) {
+        return classAttributes.get(className);
     }
 
     //endregion
