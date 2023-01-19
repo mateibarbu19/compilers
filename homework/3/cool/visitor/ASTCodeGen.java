@@ -65,8 +65,8 @@ public class ASTCodeGen implements ASTVisitor<ST> {
 
     @Override
     public ST visit(ASTAssignment assignment) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Not yet implemented");
+        return templates.getInstanceOf("sequence")
+                .add("e", assignment.getExpression().accept(this));
     }
 
     @Override

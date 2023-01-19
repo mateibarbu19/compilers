@@ -105,6 +105,10 @@ loadWordFromClass(offset) ::= <<
     lw      $a0 <offset>($s0)
 >>
 
+saveWordInClass(offset) ::= <<
+    sw      $a0 <offset>($s0)
+>>
+
 putWordOnStack(address) ::= <<
 <address>
     sw      $a0 0($sp)
