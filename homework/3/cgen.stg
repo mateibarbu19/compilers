@@ -5,24 +5,24 @@ str(s) ::= "<s>"
 
 strConstant(i, size, len, str) ::= <<
 str_const<i>:
-    .word 3
-    .word <size>
-    .word String_dispTab
-    .word <len>
+    .word   3
+    .word   <size>
+    .word   String_dispTab
+    .word   <len>
     .asciiz <str>
-    .align 2
+    .align  2
 >>
 
 intConstant(i, n) ::= <<
 int_const<i>:
-    .word 2
-    .word 4
-    .word Int_dispTab
-    .word <n>
+    .word   2
+    .word   4
+    .word   Int_dispTab
+    .word   <n>
 >>
 
 word(val) ::= <<
-    .word <val>
+    .word   <val>
 >>
 
 classDisptachTab(name, methods) ::= <<
@@ -32,9 +32,9 @@ classDisptachTab(name, methods) ::= <<
 
 classPrototype(name, i, size, attributes) ::= <<
 <name>_protObj:
-    .word <i>
-    .word <size>
-    .word <name>_dispTab
+    .word   <i>
+    .word   <size>
+    .word   <name>_dispTab
 <attributes>
 >>
 
@@ -84,18 +84,38 @@ returnAddres(addr) ::= <<
     la      $a0 <addr>
 >>
 
+dispatch(i, filename, methodOffset, callerAddress) ::= <<
+<if (callerAddress)>
+<callerAddress>
+<else>
+	move    $a0 $s0
+<endif>
+    bnez    $a0 dispatch<i>
+    la      $a0 <filename>
+    li      $t1 28
+    jal     _dispatch_abort
+dispatch<i>:
+    lw      $t1 8($a0)
+    lw      $t1 <methodOffset>($t1)
+    jalr    $t1
+>>
+
+loadWordFromClass(offset) ::= <<
+    lw      $a0 <offset>($s0)
+>>
+
 program(strConstants, intConstants, classNameTabs, classObjTabs, classProtObjs, classDispatchTabs, classInits, methodDefines) ::= <<
 	.data
-    .align 2
-    .globl class_nameTab
-    .globl Int_protObj
-    .globl String_protObj
-    .globl bool_const0
-    .globl bool_const1
-    .globl Main_protObj
-    .globl _int_tag
-    .globl _string_tag
-    .globl _bool_tag
+    .align  2
+    .globl  class_nameTab
+    .globl  Int_protObj
+    .globl  String_protObj
+    .globl  bool_const0
+    .globl  bool_const1
+    .globl  Main_protObj
+    .globl  _int_tag
+    .globl  _string_tag
+    .globl  _bool_tag
 _int_tag:
     .word 2
 _string_tag:
@@ -182,79 +202,79 @@ bool_const1:
     .word Bool_dispTab
     .word 1
 class_nameTab:
-    .word str_const1
-    .word str_const2
-    .word str_const3
-    .word str_const4
-    .word str_const5
+    .word   str_const1
+    .word   str_const2
+    .word   str_const3
+    .word   str_const4
+    .word   str_const5
 <classNameTabs>
 class_objTab:
-    .word Object_protObj
-    .word Object_init
-    .word IO_protObj
-    .word IO_init
-    .word Int_protObj
-    .word Int_init
-    .word String_protObj
-    .word String_init
-    .word Bool_protObj
-    .word Bool_init
+    .word   Object_protObj
+    .word   Object_init
+    .word   IO_protObj
+    .word   IO_init
+    .word   Int_protObj
+    .word   Int_init
+    .word   String_protObj
+    .word   String_init
+    .word   Bool_protObj
+    .word   Bool_init
 <classObjTabs>
 Object_protObj:
-    .word 0
-    .word 3
-    .word Object_dispTab
+    .word   0
+    .word   3
+    .word   Object_dispTab
 
 IO_protObj:
-    .word 1
-    .word 3
-    .word IO_dispTab
+    .word   1
+    .word   3
+    .word   IO_dispTab
 
 Int_protObj:
-    .word 2
-    .word 4
-    .word Int_dispTab
-    .word 0
+    .word   2
+    .word   4
+    .word   Int_dispTab
+    .word   0
 String_protObj:
-    .word 3
-    .word 5
-    .word String_dispTab
-    .word int_const0
+    .word   3
+    .word   5
+    .word   String_dispTab
+    .word   int_const0
     .asciiz ""
-    .align 2
+    .align  2
 Bool_protObj:
-    .word 4
-    .word 4
-    .word Bool_dispTab
-    .word 0
+    .word   4
+    .word   4
+    .word   Bool_dispTab
+    .word   0
 <classProtObjs>
 Object_dispTab:
-    .word Object.abort
-    .word Object.type_name
-    .word Object.copy
+    .word   Object.abort
+    .word   Object.type_name
+    .word   Object.copy
 IO_dispTab:
-    .word Object.abort
-    .word Object.type_name
-    .word Object.copy
-    .word IO.out_string
-    .word IO.out_int
-    .word IO.in_string
-    .word IO.in_int
+    .word   Object.abort
+    .word   Object.type_name
+    .word   Object.copy
+    .word   IO.out_string
+    .word   IO.out_int
+    .word   IO.in_string
+    .word   IO.in_int
 Int_dispTab:
-    .word Object.abort
-    .word Object.type_name
-    .word Object.copy
+    .word   Object.abort
+    .word   Object.type_name
+    .word   Object.copy
 String_dispTab:
-    .word Object.abort
-    .word Object.type_name
-    .word Object.copy
-    .word String.length
-    .word String.concat
-    .word String.substr
+    .word   Object.abort
+    .word   Object.type_name
+    .word   Object.copy
+    .word   String.length
+    .word   String.concat
+    .word   String.substr
 Bool_dispTab:
-    .word Object.abort
-    .word Object.type_name
-    .word Object.copy
+    .word   Object.abort
+    .word   Object.type_name
+    .word   Object.copy
 <classDispatchTabs>
     .globl heap_start
 heap_start:

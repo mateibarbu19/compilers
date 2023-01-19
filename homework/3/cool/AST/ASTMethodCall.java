@@ -71,4 +71,8 @@ public class ASTMethodCall extends ASTExpression {
     public void setRuntimeCallerType(TypeSymbol type) {
         runtimeCallerType = type;
     }
+
+    public TypeSymbol getRuntimeCallerType() {
+        return runtimeCallerType;
+    }
 }

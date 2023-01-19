@@ -140,6 +140,6 @@ public class Compiler {
         }
 
         // Code generation
-        System.out.println(astHead.accept(new ASTCodeGen()).render());
+        System.out.println(astHead.accept(new ASTCodeGen(args[0])).render());
     }
 }

@@ -11,7 +11,7 @@ ANTLR=/usr/local/lib/antlr4.jar
 # * clean-all - Does everything the "clean" rule does. Then removes the ANTLR auto-generated files.
 #
 
-.PHONY: build run test zip clean
+.PHONY: build run test zip clean bin/cool/compiler/Compiler.class
 
 build: bin/cool/compiler/Compiler.class
 

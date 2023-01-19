@@ -7,11 +7,15 @@ import org.stringtemplate.v4.ST;
 import org.stringtemplate.v4.STGroupFile;
 
 import cool.AST.ASTAttribute;
+import cool.AST.ASTMethodCall;
+import cool.symbols.MethodSymbol;
 import cool.symbols.TypeSymbol;
 
 public class CodeGenHelper {
     private static int stringConstCounter = 6;
     private static int intConstCounter = 5;
+    private static int dispatchCounter = 0;
+    private static int classCounter = 5;
 
     private static HashMap<Integer, String> intConsts = new HashMap<Integer, String>() {
         {
@@ -41,6 +45,8 @@ public class CodeGenHelper {
         }
     };
 
+    private static HashMap<String, List<String>> dispatchTables = new HashMap<String, List<String>>();
+
     static STGroupFile templates;
 
     public ST strConstants;
@@ -67,9 +73,10 @@ public class CodeGenHelper {
     // region HELPERS
     public ST getStringConst(String value) {
         strConsts.put(value, "str_const" + stringConstCounter);
+        var size = (int) (4 + Math.ceil((float) (value.length() + 1) / 4));
         return templates.getInstanceOf("strConstant")
                 .add("i", stringConstCounter++)
-                .add("size", (int) (4 + Math.ceil((value.length() + 1) / 4)))
+                .add("size", size)
                 .add("len", getIntConstAddress(value.length()))
                 .add("str", "\"" + value + "\"");
     }
@@ -130,16 +137,17 @@ public class CodeGenHelper {
 
         addClassObjTab(name);
 
-        // TODO: check Danger zone
+        // TODO: check Danger zone 👻
         classNameTabs.add("e", getWordConst("str_const" + i));
 
         classProtObjs.add("e", templates.getInstanceOf("classPrototype")
                 .add("name", name)
-                .add("i", i - 1)
+                .add("i", classCounter++)
                 .add("size", 3 + nrAttributes)
                 .add("attributes", attributes));
 
         addClassDispatchTab(name, methodsNames);
+        dispatchTables.put(name, methodsNames);
     }
 
     public void addClassInit(String name, String parent, ST attributes) {
@@ -182,6 +190,31 @@ public class CodeGenHelper {
         }
 
         methodDefines.add("e", methodDefine);
+    }
+
+    public ST getMethodCall(ASTMethodCall method, String filename, ST callerAddress) {
+        var methodName = method.getMethod().getToken().getText();
+
+        var runtimeCallerType = method.getRuntimeCallerType();
+
+        var s = (MethodSymbol) runtimeCallerType.lookup(methodName);
+
+        var offset = getMethodOffset(runtimeCallerType.getName(), ((TypeSymbol) s.getParent()).getName() + "." + methodName);
+
+        var dispatch = templates.getInstanceOf("dispatch")
+                            .add("i", dispatchCounter++)
+                            .add("filename", getStringConstAddress(filename))
+                            .add("methodOffset", offset);
+
+        if (callerAddress != null) {
+            dispatch.add("callerAddress", callerAddress);
+        }
+
+        return dispatch;
+    }
+
+    private int getMethodOffset(String cls, String method) {
+        return dispatchTables.get(cls).indexOf(method);
     }
     //endregion
 

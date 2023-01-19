@@ -40,6 +40,12 @@ import cool.symbols.TypeSymbol;
 import cool.codegen.CodeGenHelper;
 
 public class ASTCodeGen implements ASTVisitor<ST> {
+    private String filename;
+
+    public ASTCodeGen(String filename) {
+        this.filename = filename.split("/")[filename.split("/").length - 1];
+    }
+
     static STGroupFile templates = new STGroupFile("cgen.stg");
 
     static CodeGenHelper helper = new CodeGenHelper(templates);
@@ -207,8 +213,13 @@ public class ASTCodeGen implements ASTVisitor<ST> {
 
     @Override
     public ST visit(ASTMethodCall methodCall) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Not yet implemented");
+        if (methodCall.getCaller() != null) {
+            if (methodCall.getCaller() instanceof ASTObjectId && ((ASTObjectId) methodCall.getCaller()).getToken().getText().equals("self")) {
+                return helper.getMethodCall(methodCall, filename, null);
+            }
+            return helper.getMethodCall(methodCall, filename, methodCall.getCaller().accept(this));
+        }
+        return helper.getMethodCall(methodCall, filename, null);
     }
 
     @Override
@@ -243,12 +254,18 @@ public class ASTCodeGen implements ASTVisitor<ST> {
 
     @Override
     public ST visit(ASTObjectId objectId) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Not yet implemented");
+        if (!(objectId.getSymbol().getScope() instanceof TypeSymbol))
+            throw new UnsupportedOperationException("Not yet implemented");
+
+        var attributeIndex = ((TypeSymbol) objectId.getSymbol().getScope()).getAttributesNames().indexOf(objectId.getToken().getText());
+        return templates.getInstanceOf("loadWordFromClass")
+                        .add("offset", 4 * (attributeIndex + 4));
     }
 
     @Override
     public ST visit(ASTProgram program) {
+        helper.addStringConst(filename);
+
         program.getClasses().forEach(this::visit);
 
         // assembly-ing it all together. HA! get it?
