@@ -38,11 +38,11 @@ clean:
 #
 
 zip:
-	make clean-all
+	# make clean-all
 	make build
 	make clean
 	rm -f archive.zip
-	zip -r archive.zip . --exclude "tests/*" --exclude ".*"
+	zip -r archive.zip . --exclude "tests/*" --exclude "bin/*" --exclude ".*" --exclude "*.pdf" --exclude "*.s"
 #
 # Do not change the "run" rule unless you have to!
 # It's used by the Tester class to launch the compiler.
