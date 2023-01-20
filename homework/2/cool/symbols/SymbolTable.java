@@ -1,6 +1,8 @@
 package cool.symbols;
 
 import java.io.File;
+import java.util.HashMap;
+import java.util.List;
 
 import org.antlr.v4.runtime.*;
 
@@ -13,6 +15,20 @@ public class SymbolTable {
     public static Scope globals;
 
     private static boolean semanticErrors;
+
+    private static HashMap<String, List<String>> dispatchTables = new HashMap<String, List<String>>() {
+        {
+            put("Object", List.of("Object.abort", "Object.type_name", "Object.copy"));
+            put("IO", List.of("Object.abort", "Object.type_name", "Object.copy", "IO.out_string", "IO.out_int",
+                    "IO.in_string", "IO.in_int"));
+            put("Int", List.of("Object.abort", "Object.type_name", "Object.copy"));
+            put("String", List.of("Object.abort", "Object.type_name", "Object.copy", "String.length", "String.concat",
+                    "String.substr"));
+            put("Bool", List.of("Object.abort", "Object.type_name", "Object.copy"));
+        }
+    };
+
+    private static HashMap<String, List<String>> fieldTables = new HashMap<String, List<String>>();
 
     public static void defineBasicClasses() {
         globals = new GlobalScope();
@@ -101,5 +117,27 @@ public class SymbolTable {
 
     public static boolean hasSemanticErrors() {
         return semanticErrors;
+    }
+
+    public static void putInDispatchTables(String className, List<String> methodsNames) {
+        dispatchTables.put(className, methodsNames);
+    }
+
+    /**
+     * @return the dispatchTables
+     */
+    public static HashMap<String, List<String>> getDispatchTables() {
+        return dispatchTables;
+    }
+
+    public static void putInFieldTables(String className, List<String> attributesNames) {
+        fieldTables.put(className, attributesNames);
+    }
+
+    /**
+     * @return the fieldTables
+     */
+    public static HashMap<String, List<String>> getFieldTables() {
+        return fieldTables;
     }
 }

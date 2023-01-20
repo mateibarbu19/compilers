@@ -1,6 +1,7 @@
 package cool.visitor;
 
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -228,6 +229,36 @@ public class ASTResolution implements ASTVisitor<Optional<TypeSymbol>> {
         if (classDefine.getError() == ASTError.SemnaticError) {
             return Optional.empty();
         }
+
+        var type = classDefine.getType();
+        List<String> classAttributes = new LinkedList<>();
+        List<String> classMethods = new LinkedList<>();
+
+        while (type != null) {
+            final var typeName = type.getName();
+
+            var typeMethods = type.getMethodsNames()
+                    .stream()
+                    .map(methodName -> typeName + "." + methodName)
+                    .collect(Collectors.toList());
+
+            var typeAttributes = type.getAttributesNames()
+                    .stream()
+                    .filter(attributeName -> !attributeName.equals("self"))
+                    .collect(Collectors.toList());
+
+            typeAttributes.addAll(classAttributes);
+            typeMethods.addAll(classMethods);
+
+            classMethods = typeMethods;
+            classAttributes = typeAttributes;
+
+            type = (TypeSymbol) type.getParent();
+        }
+
+        var name = classDefine.getName().getToken().getText();
+        SymbolTable.putInDispatchTables(name, classMethods);
+        SymbolTable.putInFieldTables(name, classAttributes);
 
         classDefine.getFeatures().forEach(f -> f.accept(this));
 
@@ -487,7 +518,6 @@ public class ASTResolution implements ASTVisitor<Optional<TypeSymbol>> {
             neww.setError(ASTError.SemnaticError);
             return Optional.empty();
         }
-        neww.setRuntimeType(classType);
 
         return Optional.of((TypeSymbol) SymbolTable.globals.lookup(typeName));
     }

@@ -143,6 +143,7 @@ public class ASTHierarchy implements ASTVisitor<Optional<TypeSymbol>> {
 
         if (parentType == definedType) {
             SymbolTable.error(ctx, name, "Inheritance cycle for class " + name.getText());
+            classDefine.setError(ASTError.SemnaticError);
         }
 
         classDefine.getFeatures().forEach(f -> f.accept(this));

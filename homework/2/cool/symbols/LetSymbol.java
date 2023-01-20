@@ -3,7 +3,9 @@ package cool.symbols;
 import cool.scopes.Scope;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class LetSymbol implements Scope {
     Map<String, IdSymbol> variables;
@@ -43,5 +45,9 @@ public class LetSymbol implements Scope {
     @Override
     public Scope getParent() {
         return parent;
+    }
+
+    public List<String> getVariablesNames() {
+        return variables.keySet().stream().collect(Collectors.toList());
     }
 }
