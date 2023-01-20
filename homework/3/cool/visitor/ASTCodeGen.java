@@ -64,8 +64,19 @@ public class ASTCodeGen implements ASTVisitor<ST> {
 
     @Override
     public ST visit(ASTArithmetical arithmetical) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Not yet implemented");
+        String operator = null;
+
+        switch (arithmetical.getOperator().getText()) {
+            case "+" -> operator = "add";
+            case "-" -> operator = "sub";
+            case "*" -> operator = "mul";
+            case "/" -> operator = "div";
+        }
+
+        return templates.getInstanceOf("arithmetical")
+                .add("lhs", arithmetical.getLhs().accept(this))
+                .add("operator", operator)
+                .add("rhs", arithmetical.getRhs().accept(this));
     }
 
     @Override
@@ -250,8 +261,8 @@ public class ASTCodeGen implements ASTVisitor<ST> {
 
     @Override
     public ST visit(ASTNegative negative) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Not yet implemented");
+        return templates.getInstanceOf("negative")
+                .add("expression", negative.getExpression().accept(this));
     }
 
     @Override
