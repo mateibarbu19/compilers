@@ -237,8 +237,10 @@ public class ASTResolution implements ASTVisitor<Optional<TypeSymbol>> {
         while (type != null) {
             final var typeName = type.getName();
 
+            final var tmp = classMethods.stream().map(n -> n.split("\\.", 2)[1]).collect(Collectors.toList());
             var typeMethods = type.getMethodsNames()
                     .stream()
+                    .filter(methodName -> !tmp.contains(methodName))
                     .map(methodName -> typeName + "." + methodName)
                     .collect(Collectors.toList());
 
