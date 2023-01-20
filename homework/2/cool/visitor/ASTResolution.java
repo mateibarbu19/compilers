@@ -487,6 +487,7 @@ public class ASTResolution implements ASTVisitor<Optional<TypeSymbol>> {
             neww.setError(ASTError.SemnaticError);
             return Optional.empty();
         }
+        neww.setRuntimeType(classType);
 
         return Optional.of((TypeSymbol) SymbolTable.globals.lookup(typeName));
     }
