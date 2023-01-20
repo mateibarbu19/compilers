@@ -110,6 +110,10 @@ returnAddres(addr) ::= <<
     la      $a0 <addr>
 >>
 
+returnSelf() ::= <<
+    move    $a0 $s0
+>>
+
 dispatch(i, filename, methodOffset, callerAddress, arguments, fileline, staticTable) ::= <<
 <arguments>
 <if (callerAddress)>
@@ -160,6 +164,34 @@ localVarBlock(varSizes, initializations, body) ::= <<
     addiu   $sp $sp <varSizes>    # locals free
 >>
 
+branch(i, condition, consequent, alternative) ::= <<
+<condition>
+    lw      $t1 12($a0)
+    beqz    $t1 else<i>
+<consequent>
+    b       endif<i>
+else<i>:
+<alternative>
+endif<i>:
+>>
+
+isvoid(i, expression) ::= <<
+<expression>
+    move    $t1 $a0
+    la      $a0 bool_const1
+    beqz    $t1 isvoid<i>
+    la      $a0 bool_const0
+isvoid<i>:
+>>
+
+not(i, expression) ::= <<
+<expression>
+    lw      $t1 12($a0)     # bool slot
+    la      $a0 bool_const1
+    beqz    $t1 not<i>
+    la      $a0 bool_const0
+not<i>:
+>>
 program(strConstants, intConstants, classNameTabs, classObjTabs, classProtObjs, classDispatchTabs, classInits, methodDefines) ::= <<
     .data
     .align  2

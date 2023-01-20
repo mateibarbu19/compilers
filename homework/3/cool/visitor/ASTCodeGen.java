@@ -161,8 +161,10 @@ public class ASTCodeGen implements ASTVisitor<ST> {
 
     @Override
     public ST visit(ASTIf iff) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Not yet implemented");
+        return helper.getBranch(
+                iff.getCondition().accept(this),
+                iff.getConsequent().accept(this),
+                iff.getAlternative().accept(this));
     }
 
     @Override
@@ -172,8 +174,8 @@ public class ASTCodeGen implements ASTVisitor<ST> {
 
     @Override
     public ST visit(ASTIsvoid isvoid) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Not yet implemented");
+        return helper.getIsvoid(
+                isvoid.getExpression().accept(this));
     }
 
     @Override
@@ -271,14 +273,13 @@ public class ASTCodeGen implements ASTVisitor<ST> {
 
     @Override
     public ST visit(ASTNot not) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Not yet implemented");
+        return helper.getNot(not.getExpression().accept(this));
     }
 
     @Override
     public ST visit(ASTObjectId objectId) {
         if (objectId.getToken().getText().equals("self")) {
-            return null;
+            return templates.getInstanceOf("returnSelf");
         }
 
         if (objectId.getSymbol().getScope() instanceof TypeSymbol) {

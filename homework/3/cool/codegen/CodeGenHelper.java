@@ -15,6 +15,8 @@ public class CodeGenHelper {
     private static int stringConstCounter = 6;
     private static int intConstCounter = 5;
     private static int dispatchCounter = 0;
+    private static int branchCounter = 0;
+    private static int isvoidCounter = 0;
     private static int classCounter = 5;
 
     private static HashMap<Integer, String> intConsts = new HashMap<Integer, String>() {
@@ -215,6 +217,26 @@ public class CodeGenHelper {
         }
 
         return dispatch;
+    }
+
+    public ST getBranch(ST condition, ST consequent, ST alternative) {
+        return templates.getInstanceOf("branch")
+                .add("i", branchCounter++)
+                .add("condition", condition)
+                .add("consequent", consequent)
+                .add("alternative", alternative);
+    }
+
+    public ST getIsvoid(ST expression) {
+        return templates.getInstanceOf("isvoid")
+                .add("i", isvoidCounter++)
+                .add("expression", expression);
+    }
+
+    public ST getNot(ST expression) {
+        return templates.getInstanceOf("not")
+                .add("i", isvoidCounter++)
+                .add("expression", expression);
     }
 
     private int getMethodOffset(String cls, String method) {
