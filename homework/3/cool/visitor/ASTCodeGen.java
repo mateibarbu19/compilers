@@ -4,7 +4,6 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.stringtemplate.v4.ST;
 import org.stringtemplate.v4.STGroupFile;
@@ -38,9 +37,13 @@ import cool.AST.ASTString;
 import cool.AST.ASTTypeId;
 import cool.AST.ASTVariable;
 import cool.AST.ASTWhile;
+import cool.symbols.IdSymbol;
+import cool.symbols.LetSymbol;
 import cool.symbols.MethodSymbol;
+import cool.symbols.SymbolTable;
 import cool.symbols.TypeSymbol;
 import cool.codegen.CodeGenHelper;
+import cool.scopes.Scope;
 
 public class ASTCodeGen implements ASTVisitor<ST> {
     private String filename;
@@ -101,60 +104,33 @@ public class ASTCodeGen implements ASTVisitor<ST> {
 
     @Override
     public ST visit(ASTClassDefine classDefine) {
-        int nrAttributes = 0;
-        var type = classDefine.getType();
-        List<String> classMethods = new LinkedList<>();
-
-        while (type != null) {
-            nrAttributes += type.getAttributesNames().size() - 1;
-
-            final var typeName = type.getName();
-            var typeMethods = type.getMethodsNames()
-                    .stream()
-                    .map(methodName -> typeName + "." + methodName)
-                    .collect(Collectors.toList());
-
-            typeMethods.addAll(classMethods);
-            classMethods = typeMethods;
-
-            type = (TypeSymbol) type.getParent();
-        }
-
-        // get this class
-        List<ASTAttribute> attributesList = new LinkedList<>();
-        var currClass = classDefine;
-        while (currClass != null) {
-            var x = currClass
-                    .getFeatures()
-                    .stream()
-                    .filter(f -> f instanceof ASTAttribute)
-                    .map(ASTAttribute.class::cast)
-                    .collect(Collectors.toList());
-            x.addAll(attributesList);
-            attributesList = x;
-
-            currClass = ((TypeSymbol) currClass.getType().getParent()).getClassDefine();
-        }
-        var attributesDefault = templates.getInstanceOf("sequence");
-        attributesList.forEach(a -> attributesDefault.add("e", helper.getAttributeDefaultAddress((ASTAttribute) a)));
-
         var name = classDefine.getName().getToken().getText();
+        var attributesList = SymbolTable.getFieldTables().get(name);
+        var methodsList = SymbolTable.getDispatchTables().get(name);
 
-        helper.addClassAttributes(name, attributesList);
-        helper.addClassDefine(name, nrAttributes, classMethods, attributesDefault);
+        var attributesDefault = templates.getInstanceOf("sequence");
+        for (var attributeName : attributesList) {
+            IdSymbol symbol = (IdSymbol) classDefine.getType().lookup(attributeName);
+
+            attributesDefault.add("e", helper.getAttributeDefault(symbol.getType()));
+        }
+
+        helper.addClassDefine(name,
+                attributesList.size(),
+                methodsList,
+                attributesDefault);
 
         ST attributes = templates.getInstanceOf("sequence");
-        {
-            final var tmp = attributesList;
-            classDefine
-                    .getFeatures()
-                    .stream()
-                    .filter(f -> f instanceof ASTAttribute && ((ASTAttribute) f).getInitialization() != null)
-                    .forEach(a -> attributes
-                            .add("e", templates.getInstanceOf("fieldInit")
-                                    .add("expr", a.accept(this))
-                                    .add("offset", 4 * tmp.indexOf(a) + 12)));
-        }
+        classDefine
+                .getFeatures()
+                .stream()
+                .filter(f -> f instanceof ASTAttribute)
+                .map(ASTAttribute.class::cast)
+                .filter(a -> a.getInitialization() != null)
+                .forEach(a -> attributes
+                        .add("e", templates.getInstanceOf("fieldInit")
+                                .add("expr", a.accept(this))
+                                .add("offset", 4 * attributesList.indexOf(a.getName().getToken().getText()) + 12)));
 
         helper.addClassInit(name, classDefine.getType().getParentName(), attributes);
 
@@ -162,6 +138,7 @@ public class ASTCodeGen implements ASTVisitor<ST> {
         classDefine.getFeatures().stream().filter(f -> f instanceof ASTMethod).forEach(f -> f.accept(this));
 
         return null;
+
     }
 
     @Override
@@ -201,8 +178,36 @@ public class ASTCodeGen implements ASTVisitor<ST> {
 
     @Override
     public ST visit(ASTLet let) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Not yet implemented");
+        ST variablesInit = templates.getInstanceOf("sequence");
+        List<String> variablesList = new LinkedList<>();
+
+        Scope currentScope = let.getSymbol();
+        while (currentScope instanceof LetSymbol) {
+            var parentVariablesList = ((LetSymbol) currentScope).getVariablesNames();
+
+            parentVariablesList.addAll(variablesList);
+            variablesList = parentVariablesList;
+
+            currentScope = currentScope.getParent();
+        }
+
+        for (ASTVariable variable : let.getDeclarations()) {
+            int variableIndex = variablesList.indexOf(variable.getName().getToken().getText());
+
+            var type = variable.getName().getSymbol().getType();
+            ST init = Optional.ofNullable(variable.getInitialization())
+                    .map(d -> d.accept(this))
+                    .orElse(templates.getInstanceOf("returnAddres").add("addr", helper.getObjectDefaultAddress(type)));
+
+            variablesInit.add("e", templates.getInstanceOf("variableInit")
+                    .add("expr", init)
+                    .add("offset", -4 * (variableIndex + 1)));
+        }
+
+        return templates.getInstanceOf("localVarBlock")
+                .add("varSizes", 4 * let.getDeclarations().size())
+                .add("initializations", variablesInit)
+                .add("body", let.getBody().accept(this));
     }
 
     @Override
@@ -252,8 +257,13 @@ public class ASTCodeGen implements ASTVisitor<ST> {
 
     @Override
     public ST visit(ASTNew neww) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Not yet implemented");
+        var typeName = neww.getType().getToken().getText();
+
+        if (typeName.equals("SELF_TYPE")) {
+            return templates.getInstanceOf("newSELF_TYPE");
+        }
+        return templates.getInstanceOf("newObject")
+                .add("name", typeName);
     }
 
     @Override
@@ -270,14 +280,9 @@ public class ASTCodeGen implements ASTVisitor<ST> {
 
     @Override
     public ST visit(ASTObjectId objectId) {
-        if (!(objectId.getSymbol().getScope().getParent() instanceof TypeSymbol))
-            throw new UnsupportedOperationException("Not yet implemented");
-
         if (objectId.getSymbol().getScope() instanceof TypeSymbol) {
             var className = ((TypeSymbol) objectId.getSymbol().getReferencedScope().getParent()).getName();
-            var classAttributes = helper.getClassAttributes(className).stream()
-                    .map(x -> x.getName().getToken().getText())
-                    .collect(Collectors.toList());
+            var classAttributes = SymbolTable.getFieldTables().get(className);
 
             var attributeIndex = classAttributes.indexOf(objectId.getToken().getText());
 
@@ -301,8 +306,31 @@ public class ASTCodeGen implements ASTVisitor<ST> {
 
             return templates.getInstanceOf("loadWordFromArguments")
                     .add("offset", 4 * (attributeIndex + 3));
+        } else if (objectId.getSymbol().getScope() instanceof LetSymbol) {
+            List<String> variablesList = new LinkedList<>();
+
+            Scope currentScope = objectId.getSymbol().getScope();
+            while (currentScope instanceof LetSymbol) {
+                var parentVariablesList = ((LetSymbol) currentScope).getVariablesNames();
+
+                parentVariablesList.addAll(variablesList);
+                variablesList = parentVariablesList;
+
+                currentScope = currentScope.getParent();
+            }
+
+            var variableIndex = variablesList.indexOf(objectId.getToken().getText());
+
+            if (Optional.ofNullable(objectId.getIsOnLhs()).orElse(false)) {
+                return templates.getInstanceOf("saveWordInArguments")
+                        .add("offset", -4 * (variableIndex + 1));
+            }
+
+            return templates.getInstanceOf("loadWordFromArguments")
+                    .add("offset", -4 * (variableIndex + 1));
         }
-        return null;
+
+        throw new UnsupportedOperationException("Not yet implemented");
     }
 
     @Override

@@ -6,9 +6,9 @@ import java.util.List;
 import org.stringtemplate.v4.ST;
 import org.stringtemplate.v4.STGroupFile;
 
-import cool.AST.ASTAttribute;
 import cool.AST.ASTMethodCall;
 import cool.symbols.MethodSymbol;
+import cool.symbols.SymbolTable;
 import cool.symbols.TypeSymbol;
 
 public class CodeGenHelper {
@@ -44,20 +44,6 @@ public class CodeGenHelper {
             put(true, "bool_const1");
         }
     };
-
-    private static HashMap<String, List<String>> dispatchTables = new HashMap<String, List<String>>() {
-        {
-            put("Object", List.of("Object.abort", "Object.type_name", "Object.copy"));
-            put("IO", List.of("Object.abort", "Object.type_name", "Object.copy", "IO.out_string", "IO.out_int",
-                    "IO.in_string", "IO.in_int"));
-            put("Int", List.of("Object.abort", "Object.type_name", "Object.copy"));
-            put("String", List.of("Object.abort", "Object.type_name", "Object.copy", "String.length", "String.concat",
-                    "String.substr"));
-            put("Bool", List.of("Object.abort", "Object.type_name", "Object.copy"));
-        }
-    };
-
-    private static HashMap<String, List<ASTAttribute>> classAttributes = new HashMap<String, List<ASTAttribute>>();
 
     static STGroupFile templates;
 
@@ -159,7 +145,6 @@ public class CodeGenHelper {
                 .add("attributes", attributes));
 
         addClassDispatchTab(name, methodsNames);
-        dispatchTables.put(name, methodsNames);
     }
 
     public void addClassInit(String name, String parent, ST attributes) {
@@ -183,18 +168,6 @@ public class CodeGenHelper {
     private void addClassObjTab(String name) {
         classObjTabs.add("e", getWordConst(name + "_init"));
         classObjTabs.add("e", getWordConst(name + "_protObj"));
-    }
-
-    public ST getAttributeDefaultAddress(ASTAttribute attribute) {
-        return getAttributeDefault(attribute.getName().getSymbol().getType());
-    }
-
-    public void addClassAttributes(String className, List<ASTAttribute> attributes) {
-        classAttributes.put(className, attributes);
-    }
-
-    public List<ASTAttribute> getClassAttributes(String className) {
-        return classAttributes.get(className);
     }
 
     // endregion
@@ -240,22 +213,26 @@ public class CodeGenHelper {
     }
 
     private int getMethodOffset(String cls, String method) {
-        return dispatchTables.get(cls).indexOf(method) * 4;
+        return SymbolTable.getDispatchTables().get(cls).indexOf(method) * 4;
     }
     // endregion
 
     // region DEFAULTS HANDLING
     public ST getAttributeDefault(TypeSymbol type) {
+        return getWordConst(getObjectDefaultAddress(type));
+    }
+
+    public String getObjectDefaultAddress(TypeSymbol type) {
         if (type == TypeSymbol.INT) {
-            return getWordConst(getIntConstAddress(0));
+            return getIntConstAddress(0);
         }
         if (type == TypeSymbol.BOOL) {
-            return getWordConst(getBoolConstAddress(false));
+            return getBoolConstAddress(false);
         }
         if (type == TypeSymbol.STRING) {
-            return getWordConst(getStringConstAddress(""));
+            return getStringConstAddress("");
         }
-        return getWordConst("0");
+        return "0";
     }
     // endregion
 }

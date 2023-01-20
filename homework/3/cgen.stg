@@ -61,6 +61,32 @@ fieldInit(expr, offset) ::= <<
     sw      $a0 <offset>($s0)
 >>
 
+variableInit(expr, offset) ::= <<
+<expr>
+    sw      $a0 <offset>($fp)
+>>
+
+newObject(name) ::= <<
+    la      $a0 <name>_protObj
+    jal     Object.copy
+    jal     <name>_init
+>>
+
+newSELF_TYPE() ::= <<
+    la      $t1 class_objTab    
+    lw      $t2 0($s0)          # class tag
+    sll     $t2 $t2 3           # *8
+    addu    $t1 $t1 $t2         # class_objTab + 8 * tag
+    sw      $t1 0($sp)
+    addiu   $sp $sp -4
+    lw      $a0 0($t1)          # _protObj
+    jal     Object.copy
+    lw      $t1 4($sp)
+    addiu   $sp $sp 4
+    lw      $t1 4($t1)          # _init
+    jalr    $t1
+>>
+
 methodDefine(label, expression, paramsSize) ::= <<
 <label>:
     addiu   $sp $sp -12
@@ -89,15 +115,15 @@ dispatch(i, filename, methodOffset, callerAddress, arguments, fileline) ::= <<
 <if (callerAddress)>
 <callerAddress>
 <else>
-	move    $a0 $s0
+    move    $a0 $s0
 <endif>
     bnez    $a0 dispatch<i>
     la      $a0 <filename>
     li      $t1 <fileline>
     jal     _dispatch_abort
 dispatch<i>:
-    lw      $t1 8($a0)
-    lw      $t1 <methodOffset>($t1)
+    lw      $t1 8($a0)   # dispatch table
+    lw      $t1 <methodOffset>($t1)   # method offset
     jalr    $t1
 >>
 
@@ -123,8 +149,15 @@ putWordOnStack(address) ::= <<
     addiu   $sp $sp -4
 >>
 
+localVarBlock(varSizes, initializations, body) ::= <<
+    addiu   $sp $sp -<varSizes>   # locals alloc
+<initializations>
+<body>
+    addiu   $sp $sp <varSizes>    # locals free
+>>
+
 program(strConstants, intConstants, classNameTabs, classObjTabs, classProtObjs, classDispatchTabs, classInits, methodDefines) ::= <<
-	.data
+    .data
     .align  2
     .globl  class_nameTab
     .globl  Int_protObj
@@ -295,84 +328,84 @@ Bool_dispTab:
     .word   Object.type_name
     .word   Object.copy
 <classDispatchTabs>
-    .globl heap_start
+    .globl  heap_start
 heap_start:
-    .word 0
-	.text
-	.globl Int_init
+    .word   0
+    .text
+    .globl Int_init
     .globl String_init
     .globl Bool_init
     .globl Main_init
     .globl Main.main
 Object_init:
-    addiu $sp $sp -12
-    sw $fp 12($sp)
-    sw $s0 8($sp)
-    sw $ra 4($sp)
-    addiu $fp $sp 4
-    move $s0 $a0
-    move $a0 $s0
-    lw $fp 12($sp)
-    lw $s0 8($sp)
-    lw $ra 4($sp)
-    addiu $sp $sp 12
-    jr $ra
+    addiu   $sp $sp -12
+    sw      $fp 12($sp)
+    sw      $s0 8($sp)
+    sw      $ra 4($sp)
+    addiu   $fp $sp 4
+    move    $s0 $a0
+    move    $a0 $s0
+    lw      $fp 12($sp)
+    lw      $s0 8($sp)
+    lw      $ra 4($sp)
+    addiu   $sp $sp 12
+    jr      $ra
 IO_init:
-    addiu $sp $sp -12
-    sw $fp 12($sp)
-    sw $s0 8($sp)
-    sw $ra 4($sp)
-    addiu $fp $sp 4
-    move $s0 $a0
-    jal Object_init
-    move $a0 $s0
-    lw $fp 12($sp)
-    lw $s0 8($sp)
-    lw $ra 4($sp)
-    addiu $sp $sp 12
-    jr $ra
+    addiu   $sp $sp -12
+    sw      $fp 12($sp)
+    sw      $s0 8($sp)
+    sw      $ra 4($sp)
+    addiu   $fp $sp 4
+    move    $s0 $a0
+    jal     Object_init
+    move    $a0 $s0
+    lw      $fp 12($sp)
+    lw      $s0 8($sp)
+    lw      $ra 4($sp)
+    addiu   $sp $sp 12
+    jr      $ra
 Int_init:
-    addiu $sp $sp -12
-    sw $fp 12($sp)
-    sw $s0 8($sp)
-    sw $ra 4($sp)
-    addiu $fp $sp 4
-    move $s0 $a0
-    jal Object_init
-    move $a0 $s0
-    lw $fp 12($sp)
-    lw $s0 8($sp)
-    lw $ra 4($sp)
-    addiu $sp $sp 12
-    jr $ra
+    addiu   $sp $sp -12
+    sw      $fp 12($sp)
+    sw      $s0 8($sp)
+    sw      $ra 4($sp)
+    addiu   $fp $sp 4
+    move    $s0 $a0
+    jal     Object_init
+    move    $a0 $s0
+    lw      $fp 12($sp)
+    lw      $s0 8($sp)
+    lw      $ra 4($sp)
+    addiu   $sp $sp 12
+    jr      $ra
 String_init:
-    addiu $sp $sp -12
-    sw $fp 12($sp)
-    sw $s0 8($sp)
-    sw $ra 4($sp)
-    addiu $fp $sp 4
-    move $s0 $a0
-    jal Object_init
-    move $a0 $s0
-    lw $fp 12($sp)
-    lw $s0 8($sp)
-    lw $ra 4($sp)
-    addiu $sp $sp 12
-    jr $ra
+    addiu   $sp $sp -12
+    sw      $fp 12($sp)
+    sw      $s0 8($sp)
+    sw      $ra 4($sp)
+    addiu   $fp $sp 4
+    move    $s0 $a0
+    jal     Object_init
+    move    $a0 $s0
+    lw      $fp 12($sp)
+    lw      $s0 8($sp)
+    lw      $ra 4($sp)
+    addiu   $sp $sp 12
+    jr      $ra
 Bool_init:
-    addiu $sp $sp -12
-    sw $fp 12($sp)
-    sw $s0 8($sp)
-    sw $ra 4($sp)
-    addiu $fp $sp 4
-    move $s0 $a0
-    jal Object_init
-    move $a0 $s0
-    lw $fp 12($sp)
-    lw $s0 8($sp)
-    lw $ra 4($sp)
-    addiu $sp $sp 12
-    jr $ra
+    addiu   $sp $sp -12
+    sw      $fp 12($sp)
+    sw      $s0 8($sp)
+    sw      $ra 4($sp)
+    addiu   $fp $sp 4
+    move    $s0 $a0
+    jal     Object_init
+    move    $a0 $s0
+    lw      $fp 12($sp)
+    lw      $s0 8($sp)
+    lw      $ra 4($sp)
+    addiu   $sp $sp 12
+    jr      $ra
 <classInits>
 <methodDefines>
 >>
