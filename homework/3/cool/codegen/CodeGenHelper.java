@@ -166,8 +166,8 @@ public class CodeGenHelper {
     }
 
     private void addClassObjTab(String name) {
-        classObjTabs.add("e", getWordConst(name + "_init"));
         classObjTabs.add("e", getWordConst(name + "_protObj"));
+        classObjTabs.add("e", getWordConst(name + "_init"));
     }
 
     // endregion
