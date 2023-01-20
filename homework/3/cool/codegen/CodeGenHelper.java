@@ -17,6 +17,8 @@ public class CodeGenHelper {
     private static int dispatchCounter = 0;
     private static int branchCounter = 0;
     private static int isvoidCounter = 0;
+    private static int equalCounter = 0;
+    private static int compareCounter = 0;
     private static int classCounter = 5;
 
     private static HashMap<Integer, String> intConsts = new HashMap<Integer, String>() {
@@ -237,6 +239,20 @@ public class CodeGenHelper {
         return templates.getInstanceOf("not")
                 .add("i", isvoidCounter++)
                 .add("expression", expression);
+    }
+
+    public ST getRelational(String operator, ST lhs, ST rhs) {
+        if (operator == null) {
+            return templates.getInstanceOf("equal")
+                    .add("i", equalCounter++)
+                    .add("lhs", lhs)
+                    .add("rhs", rhs);
+        }
+        return templates.getInstanceOf("compare")
+                .add("i", compareCounter++)
+                .add("lhs", lhs)
+                .add("operator", operator)
+                .add("rhs", rhs);
     }
 
     private int getMethodOffset(String cls, String method) {

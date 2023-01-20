@@ -294,7 +294,11 @@ public class ASTCodeGen implements ASTVisitor<ST> {
         }
 
         if (objectId.getSymbol().getScope() instanceof TypeSymbol) {
-            var className = ((TypeSymbol) objectId.getSymbol().getReferencedScope().getParent()).getName();
+            var scope = objectId.getSymbol().getReferencedScope();
+            while (!(scope instanceof TypeSymbol)) {
+                scope = scope.getParent();
+            }
+            var className = ((TypeSymbol) scope).getName();
             var classAttributes = SymbolTable.getFieldTables().get(className);
 
             var attributeIndex = classAttributes.indexOf(objectId.getToken().getText());
@@ -368,8 +372,16 @@ public class ASTCodeGen implements ASTVisitor<ST> {
 
     @Override
     public ST visit(ASTRelational relational) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Not yet implemented");
+        String operator = null;
+        switch (relational.getOperator().getText()) {
+            case "<" -> operator = "blt";
+            case "<=" -> operator = "ble";
+        }
+
+        return helper.getRelational(
+                operator,
+                relational.getLhs().accept(this),
+                relational.getRhs().accept(this));
     }
 
     @Override
