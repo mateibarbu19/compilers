@@ -31,7 +31,6 @@ public class MethodSymbol extends Symbol implements Scope {
             return false;
         }
 
-        // TODO
         if (parameters.containsKey(sym.getName()))
             return false;
 

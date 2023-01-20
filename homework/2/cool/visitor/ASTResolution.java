@@ -305,7 +305,11 @@ public class ASTResolution implements ASTVisitor<Optional<TypeSymbol>> {
 
     @Override
     public Optional<TypeSymbol> visit(ASTIsvoid isvoid) {
-        return null;
+        if (isvoid.getError() != ASTError.SemnaticError) {
+            isvoid.getExpression().accept(this);
+        }
+
+        return Optional.of(TypeSymbol.BOOL);
     }
 
     @Override
