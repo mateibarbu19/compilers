@@ -403,7 +403,8 @@ public class ASTCodeGen implements ASTVisitor<ST> {
 
     @Override
     public ST visit(ASTWhile whilee) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Not yet implemented");
+        return helper.getWhile(
+                whilee.getCondition().accept(this),
+                whilee.getBody().accept(this));
     }
 }

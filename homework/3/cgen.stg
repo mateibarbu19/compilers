@@ -101,7 +101,7 @@ methodDefine(label, expression, paramsSize) ::= <<
     lw      $ra 4($sp)
     addiu   $sp $sp 12
 <if (paramsSize)>
-    addiu   $sp $sp <paramsSize> # params free
+    addiu   $sp $sp <paramsSize>    # params free
 <endif>
     jr      $ra
 >>
@@ -173,6 +173,17 @@ branch(i, condition, consequent, alternative) ::= <<
 else<i>:
 <alternative>
 endif<i>:
+>>
+
+while(i, condition, body) ::= <<
+while<i>:
+<condition>
+    lw      $t1 12($a0)     # bool slot
+    beqz    $t1 endwhile<i>
+<body>
+    b       while<i>
+endwhile<i>:
+    move    $a0 $zero
 >>
 
 isvoid(i, expression) ::= <<

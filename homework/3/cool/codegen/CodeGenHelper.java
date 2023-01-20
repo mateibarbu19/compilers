@@ -16,6 +16,7 @@ public class CodeGenHelper {
     private static int intConstCounter = 5;
     private static int dispatchCounter = 0;
     private static int branchCounter = 0;
+    private static int whileCounter = 0;
     private static int isvoidCounter = 0;
     private static int equalCounter = 0;
     private static int compareCounter = 0;
@@ -227,6 +228,13 @@ public class CodeGenHelper {
                 .add("condition", condition)
                 .add("consequent", consequent)
                 .add("alternative", alternative);
+    }
+
+    public ST getWhile(ST condition, ST body) {
+        return templates.getInstanceOf("while")
+                .add("i", whileCounter++)
+                .add("condition", condition)
+                .add("body", body);
     }
 
     public ST getIsvoid(ST expression) {

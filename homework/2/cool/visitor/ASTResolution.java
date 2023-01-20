@@ -146,6 +146,7 @@ public class ASTResolution implements ASTVisitor<Optional<TypeSymbol>> {
         Token id = assignment.getName().getToken();
         String name = id.getText();
 
+        assignment.getName().accept(this);
         Optional<TypeSymbol> type = Optional.ofNullable(assignment.getName().accept(this)).orElse(Optional.empty());
 
         if (type.isEmpty()) {
@@ -669,6 +670,8 @@ public class ASTResolution implements ASTVisitor<Optional<TypeSymbol>> {
         ParserRuleContext ctx = whilee.getContext();
         Optional<TypeSymbol> condType = Optional.ofNullable(whilee.getCondition().accept(this))
                 .orElse(Optional.empty());
+
+        whilee.getBody().accept(this);
 
         if (condType == null || condType.isEmpty() || condType.get() != TypeSymbol.BOOL) {
             SymbolTable.error(ctx, whilee.getCondition().getContext().start,
