@@ -185,7 +185,8 @@ public class CodeGenHelper {
         methodDefines.add("e", methodDefine);
     }
 
-    public ST getMethodCall(ASTMethodCall method, String filename, ST callerAddress, ST arguments) {
+    public ST getMethodCall(ASTMethodCall method, String filename, ST callerAddress, ST arguments,
+            String actualCaller) {
         var methodName = method.getMethod().getToken().getText();
 
         var runtimeCallerType = method.getRuntimeCallerType();
@@ -207,6 +208,10 @@ public class CodeGenHelper {
 
         if (arguments != null) {
             dispatch.add("arguments", arguments);
+        }
+
+        if (actualCaller != null) {
+            dispatch.add("staticTable", actualCaller + "_dispTab");
         }
 
         return dispatch;

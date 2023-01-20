@@ -233,14 +233,11 @@ public class ASTCodeGen implements ASTVisitor<ST> {
         args.forEach(a -> arguments.add("e", templates.getInstanceOf("putWordOnStack")
                 .add("address", a.accept(this))));
 
-        if (methodCall.getCaller() != null) {
-            if (methodCall.getCaller() instanceof ASTObjectId
-                    && ((ASTObjectId) methodCall.getCaller()).getToken().getText().equals("self")) {
-                return helper.getMethodCall(methodCall, filename, null, arguments);
-            }
-            return helper.getMethodCall(methodCall, filename, methodCall.getCaller().accept(this), arguments);
-        }
-        return helper.getMethodCall(methodCall, filename, null, arguments);
+        ST callerAddress = Optional.ofNullable(methodCall.getCaller()).map(c -> c.accept(this)).orElse(null);
+        String actualCaller = Optional.ofNullable(methodCall.getActualCaller()).map(c -> c.getToken().getText())
+                .orElse(null);
+
+        return helper.getMethodCall(methodCall, filename, callerAddress, arguments, actualCaller);
     }
 
     @Override
@@ -280,6 +277,10 @@ public class ASTCodeGen implements ASTVisitor<ST> {
 
     @Override
     public ST visit(ASTObjectId objectId) {
+        if (objectId.getToken().getText().equals("self")) {
+            return null;
+        }
+
         if (objectId.getSymbol().getScope() instanceof TypeSymbol) {
             var className = ((TypeSymbol) objectId.getSymbol().getReferencedScope().getParent()).getName();
             var classAttributes = SymbolTable.getFieldTables().get(className);
